@@ -6,12 +6,12 @@ import { getFirestore } from 'firebase/firestore';
 // IMPORTANTE: Reemplazá estos valores con las credenciales de tu proyecto Firebase real.
 // Podés obtenerlas desde Firebase Console → Project Settings → General → Your apps → Web app.
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT.appspot.com",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyCOzxe5RrC3hnBTnFAff5ntUQYrWpoSvTA",
+  authDomain: "tp-final-19318.firebaseapp.com",
+  projectId: "tp-final-19318",
+  storageBucket: "tp-final-19318.firebasestorage.app",
+  messagingSenderId: "750193197085",
+  appId: "1:750193197085:web:6d5bec9180b3ce8bdb86f4"
 };
 
 const app = initializeApp(firebaseConfig);
