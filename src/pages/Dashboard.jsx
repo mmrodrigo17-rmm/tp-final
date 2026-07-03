@@ -1,10 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { Container, Table, Button, Modal, Spinner, Alert } from 'react-bootstrap';
+import { Container, Table, Button, Modal, Spinner, Alert, Tabs, Tab, Row, Col, Form } from 'react-bootstrap';
 import { FaPlus, FaPenToSquare, FaTrashCan } from 'react-icons/fa6';
 import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc } from 'firebase/firestore';
 import { db } from '../firebase/config';
 import ProductForm from '../components/admin/ProductForm';
+import ProductFilters from '../components/admin/ProductFilters';
+import TransactionTable from '../components/admin/TransactionTable';
 
 const Dashboard = () => {
   // Estado principal de productos
@@ -22,6 +24,18 @@ const Dashboard = () => {
 
   // Estado de carga para operaciones CRUD (add, update, delete)
   const [operationLoading, setOperationLoading] = useState(false);
+
+  // Estado de filtros de productos
+  const [productFilters, setProductFilters] = useState({ category: '', minStock: '' });
+
+  // Productos filtrados por categoría y stock mínimo
+  const filteredProducts = useMemo(() => {
+    return products.filter(p => {
+      const matchesCategory = !productFilters.category || p.category === productFilters.category;
+      const matchesStock = !productFilters.minStock || p.stock >= Number(productFilters.minStock);
+      return matchesCategory && matchesStock;
+    });
+  }, [products, productFilters]);
 
   // Cargo la lista de productos desde Firestore al montar el componente
   const fetchProducts = async () => {
@@ -124,66 +138,81 @@ const Dashboard = () => {
         </Alert>
       )}
 
-      {/* Botón para agregar producto con icono */}
-      <Button variant="primary" className="mb-3" onClick={handleAdd}>
-        <FaPlus className="me-2" />Agregar Producto
-      </Button>
+      <Tabs defaultActiveKey="productos" className="mb-3">
+        <Tab eventKey="productos" title="Productos">
+          {/* Botón para agregar producto con icono */}
+          <Button variant="primary" className="mb-3" onClick={handleAdd}>
+            <FaPlus className="me-2" />Agregar Producto
+          </Button>
 
-      {/* Lista de productos o mensaje si está vacía */}
-      {products.length === 0 ? (
-        <Alert variant="info">
-          No hay productos todavía. Agregá tu primer producto.
-        </Alert>
-      ) : (
-        <Table striped bordered hover responsive>
-          <thead>
-            <tr>
-              <th>Imagen</th>
-              <th>Título</th>
-              <th>Precio</th>
-              <th>Stock</th>
-              <th>Categoría</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            {products.map(product => (
-              <tr key={product.id}>
-                <td>
-                  {product.image && (
-                    <img
-                      src={product.image}
-                      alt={product.title}
-                      style={{ width: 50, height: 50, objectFit: 'cover' }}
-                    />
-                  )}
-                </td>
-                <td>{product.title}</td>
-                <td>${product.price}</td>
-                <td>{product.stock}</td>
-                <td>{product.category}</td>
-                <td>
-                  <Button
-                    variant="warning"
-                    size="sm"
-                    className="me-2"
-                    onClick={() => handleEdit(product)}
-                  >
-                    <FaPenToSquare className="me-1" />Editar
-                  </Button>
-                  <Button
-                    variant="danger"
-                    size="sm"
-                    onClick={() => handleDeleteClick(product)}
-                  >
-                    <FaTrashCan className="me-1" />Eliminar
-                  </Button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </Table>
-      )}
+          {/* Filtros de productos */}
+          <Row className="mb-3">
+            <Col md={8}>
+              <ProductFilters products={products} onFilter={setProductFilters} />
+            </Col>
+          </Row>
+
+          {/* Lista de productos o mensaje si está vacía */}
+          {products.length === 0 ? (
+            <Alert variant="info">
+              No hay productos todavía. Agregá tu primer producto.
+            </Alert>
+          ) : (
+            <Table striped bordered hover responsive>
+              <thead>
+                <tr>
+                  <th>Imagen</th>
+                  <th>Título</th>
+                  <th>Precio</th>
+                  <th>Stock</th>
+                  <th>Categoría</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredProducts.map(product => (
+                  <tr key={product.id}>
+                    <td>
+                      {product.image && (
+                        <img
+                          src={product.image}
+                          alt={product.title}
+                          style={{ width: 50, height: 50, objectFit: 'cover' }}
+                        />
+                      )}
+                    </td>
+                    <td>{product.title}</td>
+                    <td>${product.price}</td>
+                    <td>{product.stock}</td>
+                    <td>{product.category}</td>
+                    <td>
+                      <Button
+                        variant="warning"
+                        size="sm"
+                        className="me-2"
+                        onClick={() => handleEdit(product)}
+                      >
+                        <FaPenToSquare className="me-1" />Editar
+                      </Button>
+                      <Button
+                        variant="danger"
+                        size="sm"
+                        onClick={() => handleDeleteClick(product)}
+                      >
+                        <FaTrashCan className="me-1" />Eliminar
+                      </Button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+          )}
+        </Tab>
+
+        <Tab eventKey="transacciones" title="Transacciones">
+          <TransactionTable />
+        </Tab>
+      </Tabs>
 
       {/* Modal para agregar/editar producto */}
       <Modal

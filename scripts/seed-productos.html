@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Seed — Productos a Firestore</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 600px; margin: 2rem auto; padding: 0 1rem; }
+    pre { background: #f5f5f5; padding: 1rem; border-radius: 6px; max-height: 400px; overflow-y: auto; font-size: 13px; }
+    button { padding: 10px 20px; font-size: 1rem; cursor: pointer; }
+    .ok { color: #16a34a; }
+    .err { color: #dc2626; }
+    #status { margin-top: 1rem; }
+  </style>
+</head>
+<body>
+  <h1>Seed: Productos → Firestore</h1>
+  <p>Este script obtiene 20 productos de la FakeStore API y los guarda en la colección <code>productos</code> de Firestore.</p>
+  <p><strong>Importante:</strong> si ya hay productos, se van a duplicar. Correlo una sola vez.</p>
+  <button id="seedBtn">▶ Ejecutar Seed</button>
+
+  <div id="status">
+    <p>✅ Listo para ejecutar — 20 productos de FakeStore API → Firestore</p>
+  </div>
+
+  <pre id="log">Esperando...</pre>
+
+  <script type="module">
+    // ─── Firebase config (misma que en src/firebase/config.js) ───
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js';
+    import { getFirestore, collection, addDoc } from 'https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js';
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCOzxe5RrC3hnBTnFAff5ntUQYrWpoSvTA",
+      authDomain: "tp-final-19318.firebaseapp.com",
+      projectId: "tp-final-19318",
+      storageBucket: "tp-final-19318.firebasestorage.app",
+      messagingSenderId: "750193197085",
+      appId: "1:750193197085:web:6d5bec9180b3ce8bdb86f4"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const $log = document.getElementById('log');
+    const $status = document.getElementById('status');
+    const $btn = document.getElementById('seedBtn');
+
+    function log(msg, type = 'info') {
+      const line = document.createElement('div');
+      line.className = type;
+      line.textContent = msg;
+      $log.appendChild(line);
+      $log.scrollTop = $log.scrollHeight;
+    }
+
+    $btn.addEventListener('click', async () => {
+      $btn.disabled = true;
+      $btn.textContent = '⏳ Ejecutando...';
+      $log.innerHTML = '';
+      $status.innerHTML = '';
+
+      try {
+        log('📦 Fetching productos desde FakeStore API...');
+        const res = await fetch('https://fakestoreapi.com/products');
+        const products = await res.json();
+        log(`✅ Obtenidos ${products.length} productos`);
+        log('');
+
+        let ok = 0, err = 0;
+
+        for (const p of products) {
+          try {
+            const docData = {
+              title: p.title,
+              price: p.price,
+              description: p.description,
+              category: p.category,
+              image: p.image,
+              stock: Math.floor(Math.random() * 50) + 5 // stock aleatorio 5-54
+            };
+
+            await addDoc(collection(db, 'productos'), docData);
+            ok++;
+            log(`  ✓ ${p.title.substring(0, 50)}...`, 'ok');
+          } catch (e) {
+            err++;
+            log(`  ✗ ${p.title.substring(0, 50)}... → ${e.message}`, 'err');
+          }
+        }
+
+        $status.innerHTML = `
+          <p><strong>Resultado:</strong></p>
+          <ul>
+            <li class="ok">✅ ${ok} productos guardados</li>
+            ${err ? `<li class="err">❌ ${err} errores</li>` : ''}
+          </ul>
+          ${ok > 0 ? '<p>📱 Ahora recargá la app — los productos deberían aparecer.</p>' : ''}
+        `;
+      } catch (e) {
+        $status.innerHTML = `<p class="err">❌ Error general: ${e.message}</p>`;
+      } finally {
+        $btn.disabled = false;
+        $btn.textContent = '▶ Ejecutar Seed';
+      }
+    });
+  </script>
+</body>
+</html>

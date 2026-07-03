@@ -24,5 +24,10 @@ dist-ssr
 *.sw?
 nodes_modules
 
+# Environment variables (Firebase credentials, etc.)
+.env
+.env.local
+.env.production
+
 # Pre-entrega backup (nested git repo)
 spec/pre-entrega/

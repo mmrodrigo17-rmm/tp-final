@@ -1,5 +1,7 @@
 // Importo styled-components para escribir CSS directamente dentro del componente
 import styled from 'styled-components';
+// Importo hooks de React
+import { useState } from 'react';
 // Importo mi hook personalizado para acceder al estado global del carrito
 import { useCart } from '../context/CartContext';
 // Importo Link de React Router para poder navegar entre páginas sin recargar el navegador
@@ -7,7 +9,15 @@ import { Link } from 'react-router-dom';
 // Importo Helmet para SEO dinámico
 import { Helmet } from 'react-helmet-async';
 // Importo React Icons para los botones de interacción
-import { FaPlus, FaMinus, FaTrashCan, FaCartShopping } from 'react-icons/fa6';
+import { FaPlus, FaMinus, FaTrashCan, FaCartShopping, FaCircleCheck } from 'react-icons/fa6';
+// Importo componentes de React-Bootstrap
+import { Spinner, Alert, Table } from 'react-bootstrap';
+// Importo contexto de autenticación
+import { useAuth } from '../context/AuthContext';
+// Importo servicio de checkout
+import { createTransaction } from '../services/checkoutService';
+// Importo configuración de Firebase
+import { db } from '../firebase/config';
 
 // --- Styled Components ---
 
@@ -109,16 +119,148 @@ const CheckoutButton = styled(StyledButton)`
   font-weight: bold;
 `;
 
+// --- Estilos para la pantalla de confirmación ---
+
+const ConfirmationContainer = styled.div`
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 1rem;
+  text-align: center;
+`;
+
+const ConfirmationIcon = styled.div`
+  font-size: 4rem;
+  color: #28a745;
+  margin-bottom: 1rem;
+`;
+
+const ConfirmationTitle = styled.h2`
+  color: #28a745;
+  margin-bottom: 0.5rem;
+`;
+
+const ConfirmationSubtitle = styled.p`
+  color: #666;
+  font-size: 1.1rem;
+  margin-bottom: 2rem;
+`;
+
+const OrderDetails = styled.div`
+  text-align: left;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 1.5rem;
+  background: #fff;
+  margin-bottom: 2rem;
+`;
+
+const OrderTotal = styled.div`
+  text-align: right;
+  font-size: 1.3rem;
+  font-weight: bold;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #ddd;
+`;
+
 // --- Componente Cart ---
 
 const Cart = () => {
   // Extraigo del contexto el array con los productos y todas las funciones que creé para manipularlos
   const { cart, increaseQuantity, decreaseQuantity, removeItem, clearCart } = useCart();
 
+  // Obtengo el usuario autenticado para el checkout
+  const { user } = useAuth();
+
+  // Estado del proceso de checkout
+  const [checkingOut, setCheckingOut] = useState(false);
+  const [errorMsg, setErrorMsg] = useState(null);
+  const [orderComplete, setOrderComplete] = useState(null);
+  // orderComplete: { items: [...], total: number } o null
+
   // Calculo el precio total acumulado de todo el carrito. 
   // Uso el método reduce() para iterar sobre cada ítem, multiplicando su precio por la cantidad, 
   // y lo voy sumando al acumulador (acc) que arranca en 0.
   const totalPrice = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+
+  // Manejador del checkout: guarda los items, crea la transacción y muestra la confirmación
+  const handleCheckout = async () => {
+    setCheckingOut(true);
+    setErrorMsg(null);
+
+    // Guardo una copia del carrito antes de limpiarlo para mostrar en la confirmación
+    const purchasedItems = [...cart];
+    const purchasedTotal = totalPrice;
+
+    try {
+      await createTransaction(db, user.uid, user.email, cart, totalPrice);
+      clearCart();
+      setOrderComplete({ items: purchasedItems, total: purchasedTotal });
+    } catch (err) {
+      setErrorMsg(err.message || 'Error al procesar la compra. Intentá de nuevo.');
+    } finally {
+      setCheckingOut(false);
+    }
+  };
+
+  // --- Vista de orden completada ---
+  if (orderComplete) {
+    return (
+      <ConfirmationContainer>
+        <Helmet>
+          <title>¡Compra realizada! — Mi Tienda</title>
+        </Helmet>
+        <ConfirmationIcon>
+          <FaCircleCheck />
+        </ConfirmationIcon>
+        <ConfirmationTitle>¡Gracias por tu compra!</ConfirmationTitle>
+        <ConfirmationSubtitle>
+          Tu pedido fue registrado con éxito. Acá están los detalles:
+        </ConfirmationSubtitle>
+
+        <OrderDetails>
+          <Table striped bordered hover responsive>
+            <thead>
+              <tr>
+                <th>Producto</th>
+                <th>Precio Unit.</th>
+                <th>Cant.</th>
+                <th>Subtotal</th>
+              </tr>
+            </thead>
+            <tbody>
+              {orderComplete.items.map((item, index) => (
+                <tr key={index}>
+                  <td>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <img
+                        src={item.image}
+                        alt={item.title}
+                        style={{ width: 40, height: 40, objectFit: 'contain' }}
+                      />
+                      <span>{item.title.substring(0, 40)}...</span>
+                    </div>
+                  </td>
+                  <td>${item.price}</td>
+                  <td>{item.quantity}</td>
+                  <td>${(item.price * item.quantity).toFixed(2)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </Table>
+          <OrderTotal>
+            Total: <span style={{ color: '#28a745' }}>${orderComplete.total.toFixed(2)}</span>
+          </OrderTotal>
+        </OrderDetails>
+
+        <Link to="/productos">
+          <StyledButton $variant="primary" style={{ padding: '12px 30px', fontSize: '1.1rem' }}>
+            <FaCartShopping className="me-2" />Seguir comprando
+          </StyledButton>
+        </Link>
+      </ConfirmationContainer>
+    );
+  }
 
   // Verifico si el carrito está vacío. 
   // Si es así, corto la ejecución (early return) y devuelvo una vista amigable 
@@ -220,8 +362,29 @@ const Cart = () => {
           <h3 style={{ fontSize: '1.5rem', margin: '0 0 10px 0' }}>
             Total a Pagar: <span style={{ color: '#28a745' }}>${totalPrice.toFixed(2)}</span>
           </h3>
-          <CheckoutButton $variant="success">
-            <FaCartShopping className="me-2" />Finalizar Compra
+
+          {/* Feedback de checkout */}
+          {errorMsg && (
+            <Alert variant="danger" dismissible onClose={() => setErrorMsg(null)}>
+              {errorMsg}
+            </Alert>
+          )}
+
+          <CheckoutButton
+            $variant="success"
+            onClick={handleCheckout}
+            disabled={checkingOut}
+          >
+            {checkingOut ? (
+              <>
+                <Spinner size="sm" animation="border" className="me-2" />
+                Procesando...
+              </>
+            ) : (
+              <>
+                <FaCartShopping className="me-2" />Finalizar Compra
+              </>
+            )}
           </CheckoutButton>
         </div>
       </SummarySection>
