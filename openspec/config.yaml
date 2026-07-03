@@ -1,0 +1,44 @@
+# openspec/config.yaml
+schema: spec-driven
+
+context: |
+  Tech stack: React 19 + Vite 8 + React Router 7 + CSS Modules
+  Language: JavaScript (JSX, no TypeScript)
+  Architecture: Context API for state (AuthContext, CartContext), component-based, CSS Modules per component
+  Testing: None — Vitest not installed, strict_tdd: false
+  Styling: CSS Modules only; planned migration to React-Bootstrap + styled-components + React Icons
+  Auth: Simulated boolean toggle; planned migration to Firebase Auth
+  Data: FakeStore API (REST); planned migration to Firebase Firestore
+  Routing: React Router 7 with protected routes (ProtectedRoute wrapper)
+  Linting: ESLint 10 with react-hooks + react-refresh plugins
+  Package manager: npm (package-lock.json expected)
+  Deploy: GitHub Pages (planned)
+
+rules:
+  proposal:
+    - Include rollback plan for risky changes
+    - For Firebase migration, include data migration strategy
+  specs:
+    - Use Given/When/Then for scenarios
+    - Use RFC 2119 keywords (MUST, SHALL, SHOULD, MAY)
+  design:
+    - Include sequence diagrams for complex flows
+    - Document architecture decisions with rationale
+    - Show component tree for new features
+  tasks:
+    - Group by phase, use hierarchical numbering
+    - Keep tasks completable in one session
+  apply:
+    - Follow existing code patterns (CSS Modules, JSX)
+    tdd: false
+    test_command: ""
+  verify:
+    test_command: ""
+    build_command: "npm run build"
+    coverage_threshold: 0
+  archive:
+    - Warn before merging destructive deltas
+
+persistence:
+  mode: hybrid
+  engram_project: tp-final
