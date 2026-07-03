@@ -39,27 +39,27 @@ const Nav = ({ searchTerm, setSearchTerm }) => {
         {/* Links de navegación principales: se alinean a la izquierda (me-auto) */}
         <NavBs className="me-auto mb-2 mb-lg-0">
           
-          {/* Uso el parámetro "as" de Bootstrap para que <Nav.Link> renderice 
+          {/* Uso el parámetro "as" de Bootstrap para que <NavBs.Link> renderice 
               un <NavLink> de React Router en lugar de un <a> genérico.
               Así mantengo el ruteo interno sin recargar la página. */}
-          <Nav.Link as={NavLink} to="/" end>
+          <NavBs.Link as={NavLink} to="/" end>
             Inicio
-          </Nav.Link>
-          <Nav.Link as={NavLink} to="/productos">
+          </NavBs.Link>
+          <NavBs.Link as={NavLink} to="/productos">
             Productos
-          </Nav.Link>
-          <Nav.Link as={NavLink} to="/carrito">
+          </NavBs.Link>
+          <NavBs.Link as={NavLink} to="/carrito">
             {/* Icono de carrito de compras con contador de artículos */}
             <FaCartShopping className="me-1" />
             Carrito
             {totalItems > 0 && <span className={styles.badge}>{totalItems}</span>}
-          </Nav.Link>
+          </NavBs.Link>
           
           {/* Link al panel de administración — solo visible para usuarios admin */}
           {isAdmin && (
-            <Nav.Link as={NavLink} to="/dashboard">
+            <NavBs.Link as={NavLink} to="/dashboard">
               Panel Admin
-            </Nav.Link>
+            </NavBs.Link>
           )}
         </NavBs>
         
@@ -90,12 +90,12 @@ const Nav = ({ searchTerm, setSearchTerm }) => {
           ) : (
             // Muestro enlaces a las páginas de login y registro
             <>
-              <Nav.Link as={NavLink} to="/login">
+              <NavBs.Link as={NavLink} to="/login">
                 Iniciar Sesión
-              </Nav.Link>
-              <Nav.Link as={NavLink} to="/register">
+              </NavBs.Link>
+              <NavBs.Link as={NavLink} to="/register">
                 Registrarse
-              </Nav.Link>
+              </NavBs.Link>
             </>
           )}
         </NavBs>

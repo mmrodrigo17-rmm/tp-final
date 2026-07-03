@@ -121,7 +121,7 @@ const ItemDetailContainer = () => {
         <title>{product.title} — Mi Tienda</title>
         <meta name="description" content={metaDescription} />
       </Helmet>
-    // Contenedor principal usando Flexbox para poner la imagen y el texto lado a lado
+    {/* Contenedor principal: Flexbox para imagen + texto lado a lado */}
     <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap' }}>
       
       {/* Imagen del producto */}
