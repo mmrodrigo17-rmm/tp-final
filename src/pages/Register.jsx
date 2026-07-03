@@ -1,10 +1,8 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
-import { Container, Row, Col, Form, Button, Alert, Spinner } from 'react-bootstrap';
 import { useAuth } from '../context/AuthContext';
 
-// Mapeo de códigos de error de Firebase Auth a mensajes en español rioplatense
 const getFirebaseErrorMessage = (error) => {
   const messages = {
     'auth/email-already-in-use': 'Este correo electrónico ya está registrado',
@@ -19,16 +17,11 @@ const Register = () => {
   const { register } = useAuth();
   const navigate = useNavigate();
 
-  // Estado del formulario
   const [formData, setFormData] = useState({ email: '', password: '', confirmPassword: '' });
-  // Errores de validación por campo
   const [errors, setErrors] = useState({});
-  // Error global del formulario (errores de Firebase)
   const [submitError, setSubmitError] = useState('');
-  // Estado de carga mientras se procesa el registro
   const [loading, setLoading] = useState(false);
 
-  // Valido los campos del formulario antes de enviar
   const validate = () => {
     const newErrors = {};
     if (!formData.email.trim()) {
@@ -50,17 +43,14 @@ const Register = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  // Manejo los cambios en los inputs
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
-    // Limpio el error del campo cuando el usuario empieza a escribir
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: '' }));
     }
   };
 
-  // Manejo el envío del formulario
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitError('');
@@ -69,9 +59,8 @@ const Register = () => {
 
     setLoading(true);
     try {
-      // createUserWithEmailAndPassword auto-loguea al usuario tras crear la cuenta
       await register(formData.email, formData.password);
-      navigate('/'); // Redirijo al inicio tras registro exitoso
+      navigate('/');
     } catch (error) {
       setSubmitError(getFirebaseErrorMessage(error));
     } finally {
@@ -80,78 +69,98 @@ const Register = () => {
   };
 
   return (
-    <Container>
+    <div className="container mx-auto px-4">
       <Helmet>
         <title>Registro — Mi Tienda</title>
       </Helmet>
-      <Row className="justify-content-center mt-5">
-        <Col xs={12} md={6} lg={4}>
-          <h2 className="mb-4">Crear Cuenta</h2>
+      <div className="flex justify-center mt-20">
+        <div className="w-full max-w-md bg-base-100 p-8 rounded-xl shadow-lg">
+          <h2 className="text-2xl font-bold mb-6 text-center">Crear Cuenta</h2>
 
-          {submitError && <Alert variant="danger">{submitError}</Alert>}
+          {submitError && (
+            <div className="alert alert-error mb-4">
+              <span>{submitError}</span>
+            </div>
+          )}
 
-          <Form onSubmit={handleSubmit}>
-            <Form.Group className="mb-3">
-              <Form.Label>Correo electrónico</Form.Label>
-              <Form.Control
+          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+            <div className="form-control">
+              <label className="label">
+                <span className="label-text">Correo electrónico</span>
+              </label>
+              <input
                 type="email"
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
-                isInvalid={!!errors.email}
                 placeholder="tu@correo.com"
+                className={`input input-bordered w-full ${errors.email ? 'input-error' : ''}`}
               />
-              <Form.Control.Feedback type="invalid">
-                {errors.email}
-              </Form.Control.Feedback>
-            </Form.Group>
+              {errors.email && (
+                <label className="label">
+                  <span className="label-text-alt text-error">{errors.email}</span>
+                </label>
+              )}
+            </div>
 
-            <Form.Group className="mb-3">
-              <Form.Label>Contraseña</Form.Label>
-              <Form.Control
+            <div className="form-control">
+              <label className="label">
+                <span className="label-text">Contraseña</span>
+              </label>
+              <input
                 type="password"
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
-                isInvalid={!!errors.password}
                 placeholder="Mínimo 6 caracteres"
+                className={`input input-bordered w-full ${errors.password ? 'input-error' : ''}`}
               />
-              <Form.Control.Feedback type="invalid">
-                {errors.password}
-              </Form.Control.Feedback>
-            </Form.Group>
+              {errors.password && (
+                <label className="label">
+                  <span className="label-text-alt text-error">{errors.password}</span>
+                </label>
+              )}
+            </div>
 
-            <Form.Group className="mb-3">
-              <Form.Label>Confirmar Contraseña</Form.Label>
-              <Form.Control
+            <div className="form-control">
+              <label className="label">
+                <span className="label-text">Confirmar Contraseña</span>
+              </label>
+              <input
                 type="password"
                 name="confirmPassword"
                 value={formData.confirmPassword}
                 onChange={handleChange}
-                isInvalid={!!errors.confirmPassword}
                 placeholder="Repetí tu contraseña"
+                className={`input input-bordered w-full ${errors.confirmPassword ? 'input-error' : ''}`}
               />
-              <Form.Control.Feedback type="invalid">
-                {errors.confirmPassword}
-              </Form.Control.Feedback>
-            </Form.Group>
+              {errors.confirmPassword && (
+                <label className="label">
+                  <span className="label-text-alt text-error">{errors.confirmPassword}</span>
+                </label>
+              )}
+            </div>
 
-            <Button variant="primary" type="submit" disabled={loading} className="w-100">
+            <button
+              type="submit"
+              className="btn btn-primary w-full mt-2"
+              disabled={loading}
+            >
               {loading ? (
                 <>
-                  <Spinner size="sm" animation="border" className="me-2" />
+                  <span className="loading loading-spinner loading-sm me-2"></span>
                   Creando cuenta...
                 </>
               ) : 'Crear Cuenta'}
-            </Button>
-          </Form>
+            </button>
+          </form>
 
-          <p className="mt-3 text-center">
-            ¿Ya tenés cuenta? <Link to="/login">Iniciá sesión</Link>
+          <p className="mt-4 text-center">
+            ¿Ya tenés cuenta? <Link to="/login" className="link link-primary">Iniciá sesión</Link>
           </p>
-        </Col>
-      </Row>
-    </Container>
+        </div>
+      </div>
+    </div>
   );
 };
 

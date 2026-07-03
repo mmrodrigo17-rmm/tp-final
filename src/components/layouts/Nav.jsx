@@ -8,6 +8,8 @@ import { FaCartShopping, FaMagnifyingGlass } from 'react-icons/fa6';
 // Importo mis custom hooks para poder leer el estado global del carrito y de la sesión del usuario.
 import { useCart } from '../../context/CartContext';
 import { useAuth } from '../../context/AuthContext';
+// Importo toggle de tema dark/light
+import ThemeToggle from './ThemeToggle';
 // Importo los estilos usando CSS Modules. Esto asegura que estas clases 
 // solo afecten a este componente y no rompan los estilos en otras partes de la app.
 import styles from './Nav.module.css';
@@ -77,6 +79,7 @@ const Nav = ({ searchTerm, setSearchTerm }) => {
 
         {/* Sección de autenticación: se alinea a la derecha */}
         <NavBs className="ms-2">
+          <ThemeToggle />
           {isAuthenticated ? (
             // Muestro el email del usuario logueado y el botón para cerrar sesión
             <>
