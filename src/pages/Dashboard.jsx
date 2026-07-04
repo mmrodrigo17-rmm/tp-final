@@ -183,7 +183,7 @@ const Dashboard = () => {
         <>
           {/* Botón para agregar producto con icono */}
           <button className="btn btn-primary px-6 py-2 mb-4 gap-2" onClick={handleAdd}>
-            <FaPlus />Agregar Producto
+            <FaPlus />Agregar
           </button>
 
           {/* Filtros de productos */}
@@ -257,7 +257,7 @@ const Dashboard = () => {
       <dialog ref={productModalRef} className={`modal ${showModal ? 'modal-open' : ''}`}>
         <div className="modal-box">
           <h3 className="font-bold text-lg mb-4">
-            {editingProduct ? 'Editar Producto' : 'Agregar Producto'}
+            {editingProduct ? 'Editar' : 'Agregar'}
           </h3>
           <ProductForm
             initialData={editingProduct}

@@ -50,9 +50,9 @@ const Nav = ({ searchTerm, setSearchTerm }) => {
           <NavBs.Link as={NavLink} to="/productos" className="whitespace-nowrap">
             Productos
           </NavBs.Link>
-          <NavBs.Link as={NavLink} to="/carrito" className="whitespace-nowrap">
+          <NavBs.Link as={NavLink} to="/carrito" style={{ display: 'flex', alignItems: 'center', whiteSpace: 'nowrap' }}>
             {/* Icono de carrito de compras con contador de artículos */}
-            <FaCartShopping className="me-1" />
+            <FaCartShopping style={{ marginRight: '8px' }} />
             Carrito
             {totalItems > 0 && <span className={styles.badge}>{totalItems}</span>}
           </NavBs.Link>
