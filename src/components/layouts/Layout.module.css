@@ -10,10 +10,17 @@
   background: var(--bg);
 }
 
-.brand {
-  color: var(--heading);
-  margin: 0 0 0.5rem 0;
-  font-size: 1.5rem;
+.logo {
+  height: 40px;
+  width: auto;
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+@media (max-width: 768px) {
+  .logo {
+    height: 32px;
+  }
 }
 
 .main {

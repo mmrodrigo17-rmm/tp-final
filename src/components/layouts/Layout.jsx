@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { Outlet } from 'react-router-dom';
+import { Link, Outlet } from 'react-router-dom';
 import Nav from './Nav';
 import Footer from './Footer';
 import estilos from './Layout.module.css';
+import logo from '../../assets/logo.png';
 
 const Layout = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -10,7 +11,9 @@ const Layout = () => {
   return (
     <div className={estilos.wrapper}>
       <header className={estilos.header}>
-        <h1 className={estilos.brand}>Mi Tienda Monumental</h1>
+        <Link to="/" style={{ textDecoration: 'none', display: 'inline-block' }}>
+          <img src={logo} alt="Mi Tienda Monumental" className={estilos.logo} />
+        </Link>
         <Nav searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
       </header>
 
