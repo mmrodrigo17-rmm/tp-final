@@ -9,16 +9,11 @@ const Register = () => {
   const { register } = useAuth();
   const navigate = useNavigate();
 
-  // Estado del formulario
   const [formData, setFormData] = useState({ email: '', password: '', confirmPassword: '' });
-  // Errores de validación por campo
   const [errors, setErrors] = useState({});
-  // Error global del formulario (errores de Firebase)
   const [submitError, setSubmitError] = useState('');
-  // Estado de carga mientras se procesa el registro
   const [loading, setLoading] = useState(false);
 
-  // Valido los campos del formulario antes de enviar
   const validate = () => {
     const newErrors = {};
     if (!formData.email.trim()) {
@@ -40,17 +35,14 @@ const Register = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  // Manejo los cambios en los inputs
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
-    // Limpio el error del campo cuando el usuario empieza a escribir
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: '' }));
     }
   };
 
-  // Manejo el envío del formulario
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitError('');
@@ -59,9 +51,8 @@ const Register = () => {
 
     setLoading(true);
     try {
-      // createUserWithEmailAndPassword auto-loguea al usuario tras crear la cuenta
       await register(formData.email, formData.password);
-      navigate('/'); // Redirijo al inicio tras registro exitoso
+      navigate('/');
     } catch (error) {
       setSubmitError(getFirebaseErrorMessage(error));
     } finally {

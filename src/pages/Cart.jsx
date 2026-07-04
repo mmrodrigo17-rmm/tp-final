@@ -1,35 +1,23 @@
-// Importo styled-components para escribir CSS directamente dentro del componente
 import styled from 'styled-components';
-// Importo hooks de React
 import { useState, useMemo } from 'react';
-// Importo mi hook personalizado para acceder al estado global del carrito
 import { useCart } from '../context/CartContext';
-// Importo Link y useNavigate de React Router para navegación y redirección
 import { Link, useNavigate } from 'react-router-dom';
-// Importo Helmet para SEO dinámico
 import { Helmet } from 'react-helmet-async';
-// Importo React Icons para los botones de interacción
 import { FaPlus, FaMinus, FaTrashCan, FaCartShopping, FaCircleCheck } from 'react-icons/fa6';
-// Importo componentes de React-Bootstrap
 import { Spinner, Alert, Table } from 'react-bootstrap';
-// Importo contexto de autenticación
 import { useAuth } from '../context/AuthContext';
-// Importo servicio de checkout
 import { createTransaction } from '../services/checkoutService';
-// Importo configuración de Firebase
 import { db } from '../firebase/config';
 
 // --- Styled Components ---
 
-// CartContainer: envoltura principal, centrada y con ancho máximo.
 const CartContainer = styled.div`
   max-width: 800px;
   margin: 0 auto;
   padding: 1rem;
 `;
 
-// CartItem: tarjeta individual de producto en el carrito.
-// En mobile (<768px) apila los elementos verticalmente.
+// CartItem: en mobile (<768px) apila verticalmente.
 const CartItem = styled.div`
   display: flex;
   align-items: center;
@@ -46,14 +34,12 @@ const CartItem = styled.div`
   }
 `;
 
-// ItemImage: miniatura del producto.
 const ItemImage = styled.img`
   width: 70px;
   height: 70px;
   object-fit: contain;
 `;
 
-// ItemInfo: bloque de información textual del producto (título, precio, subtotal).
 const ItemInfo = styled.div`
   flex: 1;
   margin-left: 1.5rem;
@@ -64,14 +50,13 @@ const ItemInfo = styled.div`
   }
 `;
 
-// Controls: grupo de botones para aumentar/disminuir cantidad.
 const Controls = styled.div`
   display: flex;
   align-items: center;
   gap: 0.5rem;
 `;
 
-// SummarySection: pie del carrito con acciones globales y totales.
+// SummarySection: pie del carrito con total y checkout
 const SummarySection = styled.div`
   border-top: 2px solid #222;
   margin-top: 2.5rem;
@@ -112,14 +97,14 @@ const StyledButton = styled.button`
   }
 `;
 
-// Botón de checkout, más grande y con estilo destacado.
+// CheckoutButton: más grande y destacado
 const CheckoutButton = styled(StyledButton)`
   padding: 12px 25px;
   font-size: 1.2rem;
   font-weight: bold;
 `;
 
-// --- Estilos para la pantalla de confirmación ---
+// --- Confirmación de orden ---
 
 const ConfirmationContainer = styled.div`
   max-width: 800px;
@@ -163,33 +148,25 @@ const OrderTotal = styled.div`
   border-top: 1px solid #ddd;
 `;
 
-// --- Componente Cart ---
+// --- Componente ---
 
 const Cart = () => {
-  // Extraigo del contexto el array con los productos y todas las funciones que creé para manipularlos
   const { cart, increaseQuantity, decreaseQuantity, removeItem, clearCart } = useCart();
-
-  // Obtengo el usuario autenticado para el checkout
   const { user } = useAuth();
 
-  // Hook de navegación para redirigir si no hay sesión
   const navigate = useNavigate();
 
-  // Estado del proceso de checkout
   const [checkingOut, setCheckingOut] = useState(false);
   const [errorMsg, setErrorMsg] = useState(null);
   const [orderComplete, setOrderComplete] = useState(null);
-  // orderComplete: { items: [...], total: number } o null
 
-  // Calculo el precio total acumulado de todo el carrito, memoizado
   const totalPrice = useMemo(
     () => cart.reduce((acc, item) => acc + (item.price * item.quantity), 0),
     [cart]
   );
 
-  // Manejador del checkout: si no hay sesión, redirige al login
+  // Si no hay sesión, redirige al login
   const handleCheckout = async () => {
-    // Si el usuario no está autenticado, lo mando al login
     if (!user) {
       navigate('/login');
       return;
@@ -198,7 +175,7 @@ const Cart = () => {
     setCheckingOut(true);
     setErrorMsg(null);
 
-    // Guardo una copia del carrito antes de limpiarlo para mostrar en la confirmación
+    // Copia del carrito para confirmación antes de limpiar
     const purchasedItems = [...cart];
     const purchasedTotal = totalPrice;
 
@@ -302,17 +279,13 @@ const Cart = () => {
       </Helmet>
       <h2>Tu Carrito</h2>
       
-      {/* Contenedor de la lista de productos */}
+      {/* Lista de productos */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '1.5rem' }}>
         
-        {/* Itero sobre el array del carrito usando map() para renderizar una tarjeta por cada producto.
-            Es obligatorio pasarle la prop "key" (uso el id del ítem) para que React pueda rastrear los cambios de forma eficiente. */}
         {cart.map(item => (
           <CartItem key={item.id}>
-            {/* Imagen miniatura del producto */}
             <ItemImage src={item.image} alt={item.title} />
             
-            {/* Sección de información: Título cortado para no desarmar el diseño, precio unitario y el subtotal de ese ítem en particular */}
             <ItemInfo>
               <h4 style={{ margin: '0 0 5px 0', fontSize: '1.1rem' }}>{item.title.substring(0, 45)}...</h4>
               <p style={{ margin: 0, color: '#666', fontSize: '0.9rem' }}>Precio unitario: ${item.price}</p>
@@ -321,9 +294,7 @@ const Cart = () => {
               </p>
             </ItemInfo>
 
-            {/* Controles interactivos para modificar la cantidad que me llevo de este producto */}
             <Controls>
-              {/* Botón de restar */}
               <StyledButton 
                 $variant="primary"
                 $size="sm"
@@ -333,12 +304,10 @@ const Cart = () => {
                 <FaMinus />
               </StyledButton>
               
-              {/* Muestro la cantidad actual del ítem */}
               <span style={{ minWidth: '25px', textAlign: 'center', fontWeight: 'bold', fontSize: '1.1rem' }}>
                 {item.quantity}
               </span>
               
-              {/* Botón de sumar */}
               <StyledButton 
                 $variant="primary"
                 $size="sm"
@@ -348,7 +317,6 @@ const Cart = () => {
               </StyledButton>
             </Controls>
 
-            {/* Botón para eliminar definitivamente este producto del carrito */}
             <StyledButton 
               $variant="danger"
               onClick={() => removeItem(item.id)}
@@ -359,15 +327,12 @@ const Cart = () => {
         ))}
       </div>
 
-      {/* Footer del Carrito: Zona de acciones generales y totales */}
       <SummarySection>
         
-        {/* Botón de pánico para limpiar todo el estado del carrito de una sola vez */}
         <StyledButton $variant="secondary" onClick={clearCart}>
           <FaTrashCan className="me-1" />Vaciar Carrito
         </StyledButton>
         
-        {/* Resumen del total y botón de pago (checkout) */}
         <div>
           <h3 style={{ fontSize: '1.5rem', margin: '0 0 10px 0' }}>
             Total a Pagar: <span style={{ color: '#28a745' }}>${totalPrice.toFixed(2)}</span>
