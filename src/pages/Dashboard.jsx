@@ -182,8 +182,8 @@ const Dashboard = () => {
       {activeTab === 'productos' && (
         <>
           {/* Botón para agregar producto con icono */}
-          <button className="btn btn-primary mb-4" onClick={handleAdd}>
-            <FaPlus className="me-2" />Agregar Producto
+          <button className="btn btn-primary px-6 py-2 mb-4 gap-2" onClick={handleAdd}>
+            <FaPlus />Agregar Producto
           </button>
 
           {/* Filtros de productos */}
@@ -225,18 +225,18 @@ const Dashboard = () => {
                       <td>${product.price}</td>
                       <td>{product.stock}</td>
                       <td>{product.category}</td>
-                      <td>
+                      <td className="whitespace-nowrap">
                         <button
-                          className="btn btn-warning btn-sm me-2"
+                          className="btn btn-warning btn-sm me-2 gap-2"
                           onClick={() => handleEdit(product)}
                         >
-                          <FaPenToSquare className="me-1" />Editar
+                          <FaPenToSquare />Editar
                         </button>
                         <button
-                          className="btn btn-error btn-sm"
+                          className="btn btn-error btn-sm gap-2"
                           onClick={() => handleDeleteClick(product)}
                         >
-                          <FaTrashCan className="me-1" />Eliminar
+                          <FaTrashCan />Eliminar
                         </button>
                       </td>
                     </tr>

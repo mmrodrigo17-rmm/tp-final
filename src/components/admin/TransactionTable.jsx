@@ -190,9 +190,9 @@ const TransactionTable = () => {
 
       {/* Botón de exportar CSV */}
       {filteredTransactions.length > 0 && (
-        <div className="text-end mb-4">
-          <button className="btn btn-success btn-sm" onClick={exportCSV}>
-            <FaDownload className="me-1" />Exportar CSV
+        <div className="text-end mb-4 whitespace-nowrap">
+          <button className="btn btn-success btn-sm px-4 gap-2" onClick={exportCSV}>
+            <FaDownload />Exportar CSV
           </button>
         </div>
       )}

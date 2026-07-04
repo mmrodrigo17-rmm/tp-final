@@ -109,8 +109,8 @@ const Cart = () => {
           </div>
         </div>
 
-        <Link to="/productos" className="btn btn-primary px-6 py-3 text-lg">
-          <FaCartShopping className="me-2" />Seguir comprando
+        <Link to="/productos" className="btn btn-primary px-6 py-3 text-lg gap-2">
+          <FaCartShopping />Seguir comprando
         </Link>
       </div>
     );
@@ -190,10 +190,10 @@ const Cart = () => {
 
             {/* Botón para eliminar definitivamente este producto del carrito */}
             <button 
-              className="btn btn-error"
+              className="btn btn-error gap-2"
               onClick={() => removeItem(item.id)}
             >
-              <FaTrashCan className="me-1" />Eliminar
+              <FaTrashCan />Eliminar
             </button>
           </div>
         ))}
@@ -203,8 +203,8 @@ const Cart = () => {
       <div className="border-t-2 border-base-content mt-10 pt-6 flex flex-col sm:flex-row justify-between items-center gap-4">
         
         {/* Botón de pánico para limpiar todo el estado del carrito de una sola vez */}
-        <button className="btn btn-ghost" onClick={clearCart}>
-          <FaTrashCan className="me-1" />Vaciar Carrito
+        <button className="btn btn-ghost gap-2" onClick={clearCart}>
+          <FaTrashCan />Vaciar Carrito
         </button>
         
         {/* Resumen del total y botón de pago (checkout) */}
@@ -222,18 +222,18 @@ const Cart = () => {
           )}
 
           <button
-            className="btn btn-success text-lg font-bold px-6 py-3"
+            className="btn btn-success text-lg font-bold px-6 py-3 gap-2"
             onClick={handleCheckout}
             disabled={checkingOut}
           >
             {checkingOut ? (
               <>
-                <span className="loading loading-spinner loading-sm me-2"></span>
+                <span className="loading loading-spinner loading-sm"></span>
                 Procesando...
               </>
             ) : (
               <>
-                <FaCartShopping className="me-2" />Finalizar Compra
+                <FaCartShopping />Finalizar Compra
               </>
             )}
           </button>
