@@ -44,13 +44,13 @@ const Nav = ({ searchTerm, setSearchTerm }) => {
           {/* Uso el parámetro "as" de Bootstrap para que <NavBs.Link> renderice 
               un <NavLink> de React Router en lugar de un <a> genérico.
               Así mantengo el ruteo interno sin recargar la página. */}
-          <NavBs.Link as={NavLink} to="/" end>
+          <NavBs.Link as={NavLink} to="/" end className="whitespace-nowrap">
             Inicio
           </NavBs.Link>
-          <NavBs.Link as={NavLink} to="/productos">
+          <NavBs.Link as={NavLink} to="/productos" className="whitespace-nowrap">
             Productos
           </NavBs.Link>
-          <NavBs.Link as={NavLink} to="/carrito">
+          <NavBs.Link as={NavLink} to="/carrito" className="whitespace-nowrap">
             {/* Icono de carrito de compras con contador de artículos */}
             <FaCartShopping className="me-1" />
             Carrito
@@ -59,7 +59,7 @@ const Nav = ({ searchTerm, setSearchTerm }) => {
           
           {/* Link al panel de administración — solo visible para usuarios admin */}
           {isAdmin && (
-            <NavBs.Link as={NavLink} to="/dashboard">
+            <NavBs.Link as={NavLink} to="/dashboard" className="whitespace-nowrap">
               Panel Admin
             </NavBs.Link>
           )}
