@@ -185,11 +185,11 @@ const Dashboard = () => {
                     <td>${product.price}</td>
                     <td>{product.stock}</td>
                     <td>{product.category}</td>
-                    <td>
+                    <td className="d-flex justify-content-center gap-2">
                       <Button
                         variant="warning"
                         size="sm"
-                        className="me-2 d-inline-flex align-items-center justify-content-center"
+                        className="d-inline-flex align-items-center justify-content-center"
                         style={{ width: '90px' }}
                         onClick={() => handleEdit(product)}
                       >
