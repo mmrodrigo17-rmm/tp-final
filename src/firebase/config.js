@@ -4,6 +4,9 @@ import { getFirestore } from 'firebase/firestore';
 
 // Configuración de Firebase
 // Las credenciales se obtienen EXCLUSIVAMENTE de variables de entorno (VITE_FIREBASE_*).
+// En desarrollo: creá un archivo .env en la raíz con los valores reales (ver .env.example).
+// En CI/CD (GitHub Actions): se inyectan via GitHub Secrets en el workflow.
+// Sin estas variables, la app muestra un error en consola y Firebase no se inicializa.
 const requiredVars = [
   'VITE_FIREBASE_API_KEY',
   'VITE_FIREBASE_AUTH_DOMAIN',
@@ -17,7 +20,7 @@ const missing = requiredVars.filter(v => !import.meta.env[v]);
 if (missing.length > 0) {
   console.error(
     `❌ Firebase no configurado. Variables faltantes: ${missing.join(', ')}\n` +
-    'Creá un archivo .env en la raíz con las credenciales de tu proyecto Firebase.'
+    'Creá un archivo .env basado en .env.example con las credenciales de tu proyecto Firebase.'
   );
   throw new Error('Firebase configuración incompleta');
 }

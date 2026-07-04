@@ -1,5 +1,4 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { Table, Spinner, Alert, Form, Row, Col, Button } from 'react-bootstrap';
 import { FaDownload } from 'react-icons/fa6';
 import { collection, getDocs, query, orderBy } from 'firebase/firestore';
 import { db } from '../../firebase/config';
@@ -116,10 +115,8 @@ const TransactionTable = () => {
   // Estado de carga
   if (loading) {
     return (
-      <div className="text-center mt-4">
-        <Spinner animation="border" role="status">
-          <span className="visually-hidden">Cargando transacciones...</span>
-        </Spinner>
+      <div className="text-center mt-10">
+        <span className="loading loading-spinner loading-lg"></span>
       </div>
     );
   }
@@ -127,94 +124,117 @@ const TransactionTable = () => {
   // Error al cargar
   if (error) {
     return (
-      <Alert variant="danger" dismissible onClose={() => setError(null)} className="mt-3">
-        {error}
-      </Alert>
+      <div className="alert alert-error mb-4">
+        <span>{error}</span>
+        <button className="btn btn-ghost btn-xs" onClick={() => setError(null)}>✕</button>
+      </div>
     );
   }
 
   return (
     <>
       {/* Barra de filtros */}
-      <Row className="mb-3 g-2">
-        <Col md={3}>
-          <Form.Select
+      <div className="flex flex-col sm:flex-row gap-2 mb-4 items-end">
+        <div className="form-control w-full sm:w-1/4">
+          <label className="label">
+            <span className="label-text">Estado</span>
+          </label>
+          <select
             value={statusFilter}
             onChange={e => setStatusFilter(e.target.value)}
+            className="select select-bordered w-full"
             aria-label="Filtrar por estado"
           >
             <option value="">Todas</option>
             <option value="completada">Completada</option>
             <option value="pendiente">Pendiente</option>
-          </Form.Select>
-        </Col>
-        <Col md={2}>
-          <Form.Control
+          </select>
+        </div>
+        <div className="form-control w-full sm:w-1/4">
+          <label className="label">
+            <span className="label-text">Fecha inicio</span>
+          </label>
+          <input
             type="date"
             value={startDate}
             onChange={e => setStartDate(e.target.value)}
             placeholder="Fecha inicio"
+            className="input input-bordered w-full"
           />
-        </Col>
-        <Col md={2}>
-          <Form.Control
+        </div>
+        <div className="form-control w-full sm:w-1/4">
+          <label className="label">
+            <span className="label-text">Fecha fin</span>
+          </label>
+          <input
             type="date"
             value={endDate}
             onChange={e => setEndDate(e.target.value)}
             placeholder="Fecha fin"
+            className="input input-bordered w-full"
           />
-        </Col>
-        <Col md={3}>
-          <Form.Control
+        </div>
+        <div className="form-control w-full sm:w-1/4">
+          <label className="label">
+            <span className="label-text">Email</span>
+          </label>
+          <input
             type="search"
             value={emailFilter}
             onChange={e => setEmailFilter(e.target.value)}
             placeholder="Buscar por email..."
+            className="input input-bordered w-full"
           />
-        </Col>
-      </Row>
+        </div>
+      </div>
 
       {/* Botón de exportar CSV */}
       {filteredTransactions.length > 0 && (
-        <div className="text-end mb-2">
-          <Button variant="success" size="sm" onClick={exportCSV}>
-            <FaDownload className="me-1" />Exportar CSV
-          </Button>
+        <div className="text-end mb-4 whitespace-nowrap">
+          <button className="btn btn-success btn-sm px-4 gap-2" onClick={exportCSV}>
+            <FaDownload />Exportar CSV
+          </button>
         </div>
       )}
 
       {/* Contenido de la tabla */}
       {transactions.length === 0 ? (
-        <Alert variant="info">No hay transacciones</Alert>
+        <div className="alert alert-info">No hay transacciones</div>
       ) : filteredTransactions.length === 0 ? (
-        <Alert variant="info">No se encontraron transacciones con los filtros seleccionados</Alert>
+        <div className="alert alert-info">No se encontraron transacciones con los filtros seleccionados</div>
       ) : (
-        <Table striped bordered hover responsive>
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Email</th>
-              <th>Total</th>
-              <th>Estado</th>
-              <th>Items</th>
-              <th>Fecha</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredTransactions.map(tx => (
-              <tr key={tx.id}>
-                <td style={{ fontFamily: 'monospace', fontSize: '0.85rem' }}>
-                  {tx.id.substring(0, 8)}...
-                </td>
-                <td>{tx.userEmail || '-'}</td>
-                <td>${tx.total?.toFixed(2) ?? '-'}</td>
-                <td>{tx.status}</td>
-                <td>{tx.items?.length ?? 0}</td>
-                <td>{formatDate(tx.createdAt)}</td>
+        <div className="overflow-x-auto">
+          <table className="table table-zebra table-pin-rows">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Email</th>
+                <th>Total</th>
+                <th>Estado</th>
+                <th>Items</th>
+                <th>Fecha</th>
               </tr>
-            ))}
-          </tbody>
-        </Table>
+            </thead>
+            <tbody>
+              {filteredTransactions.map(tx => (
+                <tr key={tx.id}>
+                  <td className="font-mono text-sm">
+                    {tx.id.substring(0, 8)}...
+                  </td>
+                  <td>{tx.userEmail || '-'}</td>
+                  <td>${tx.total?.toFixed(2) ?? '-'}</td>
+                  <td>
+                    <span className={`badge ${tx.status === 'completada' ? 'badge-success' : 'badge-warning'}`}>
+                      {tx.status}
+                    </span>
+                  </td>
+                  <td>{tx.items?.length ?? 0}</td>
+                  <td>{formatDate(tx.createdAt)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
     </>
   );
