@@ -191,6 +191,39 @@
   color: var(--warning);
 }
 
+/* === Formulario de opinión === */
+.opinionForm {
+  background: var(--bg-alt);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.opinionFormTitle {
+  color: var(--heading);
+  margin-bottom: 1rem;
+  font-size: 1rem;
+}
+
+.ratingStars {
+  display: flex;
+  gap: 0.25rem;
+  font-size: 1.5rem;
+}
+
+.star {
+  cursor: pointer;
+  color: var(--border);
+  transition: color 0.15s;
+  user-select: none;
+}
+
+.star:hover,
+.starActive {
+  color: var(--warning);
+}
+
 @media (max-width: 768px) {
   .layout {
     flex-direction: column;

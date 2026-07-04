@@ -15,5 +15,14 @@ service cloud.firestore {
                     && request.resource.data.userId == request.auth.uid;
       allow update, delete: if request.auth != null && request.auth.token.email == 'admin@gmail.com';
     }
+
+    // Colección de opiniones — todos pueden leer, usuarios autenticados pueden crear, solo admin modifica
+    match /opiniones/{opinion} {
+      allow read: if true;
+      allow create: if request.auth != null
+                    && request.resource.data.userId == request.auth.uid
+                    && request.resource.data.productoId is string;
+      allow update, delete: if request.auth != null && request.auth.token.email == 'admin@gmail.com';
+    }
   }
 }

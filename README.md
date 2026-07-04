@@ -31,7 +31,7 @@ Aplicación web de comercio electrónico con catálogo de productos, carrusel en
 | **Catálogo de productos** | Listado paginado (8 productos por página) con **paginación cursor-based** usando Firestore `startAfter` + `getCountFromServer`. Escala a miles de documentos |
 | **Búsqueda en vivo** | Filtro de productos por nombre desde la barra de navegación, con reseteo de paginación automático |
 | **Detalle de producto** | Vista individual con descripción, precio, categoría, stock (con alerta de bajo stock si es ≤ 5 unidades) y botón para agregar al carrito con feedback visual |
-| **Opiniones en tiempo real** | Sección de opiniones en el detalle del producto con **Firestore `onSnapshot`** — las reseñas aparecen automáticamente sin recargar la página |
+| **Opiniones en tiempo real** | Sección de opiniones en el detalle del producto con **Firestore `onSnapshot`** — las reseñas aparecen automáticamente sin recargar la página. **Solo compradores verificados** pueden dejar opinión: el sistema consulta las transacciones del usuario para determinar si compró el producto. Si no compró, ve un mensaje invitándolo a comprar primero. Si ya opinó, el formulario se oculta automáticamente |
 | **Carrito de compras** | Vista con lista de productos seleccionados, control de cantidades (sumar/restar con piso en 1), eliminación individual, vaciado total y cálculo automático del subtotal por ítem y total general. **Visible sin estar logueado** |
 | **Checkout** | Botón "Finalizar Compra" que registra la transacción en Firestore. Si el usuario no está autenticado, redirige al login. Incluye protección anti-doble-click (botón deshabilitado + spinner), manejo de errores de red y confirmación de compra con resumen |
 | **Página de Contacto** | Formulario con validación inline (nombre, email con formato, mensaje). Alert de éxito al enviar. Sin backend — feedback visual |
@@ -236,6 +236,15 @@ service cloud.firestore {
       allow update, delete: if request.auth != null
                              && request.auth.token.email == 'admin@gmail.com';
     }
+
+    match /opiniones/{opinion} {
+      allow read: if true;
+      allow create: if request.auth != null
+                    && request.resource.data.userId == request.auth.uid
+                    && request.resource.data.productoId is string;
+      allow update, delete: if request.auth != null
+                             && request.auth.token.email == 'admin@gmail.com';
+    }
   }
 }
 ```
@@ -284,12 +293,14 @@ Flujo de prueba recomendado:
 6. **Ir al carrito** → `/carrito` — ajustá cantidades, eliminá productos
 7. **Ir a contacto** → `/contacto` — probá el formulario con validación
 8. **Finalizar compra** → **Finalizar Compra** → verificá la confirmación
-9. **Iniciar sesión como admin** → `admin@gmail.com` / `1234`
-10. **Dashboard** → `/dashboard` — explorá Productos (paginados) y Transacciones
-11. **ABM productos** → agregá, editá y eliminá productos
-12. **Filtrar** → categoría y stock mínimo en productos; estado/fecha/email en transacciones
-13. **Exportar CSV** → en Transacciones, **Exportar CSV** — una fila por ítem
-14. **Probar tema oscuro** → clickeá el botón 🌙/☀️ en la barra de navegación
+9. **Opinar sobre un producto comprado** → volvé al detalle del producto que compraste, ahora ves el formulario de opinión con estrellas (1-5) y comentario
+10. **Verificar opinión en vivo** → la opinión aparece al instante en la sección sin recargar; el formulario desaparece porque ya opinaste
+11. **Iniciar sesión como admin** → `admin@gmail.com` / `1234`
+12. **Dashboard** → `/dashboard` — explorá Productos (paginados) y Transacciones
+13. **ABM productos** → agregá, editá y eliminá productos
+14. **Filtrar** → categoría y stock mínimo en productos; estado/fecha/email en transacciones
+15. **Exportar CSV** → en Transacciones, **Exportar CSV** — una fila por ítem
+16. **Probar tema oscuro** → clickeá el botón 🌙/☀️ en la barra de navegación
 
 ---
 
@@ -344,11 +355,13 @@ https://mmrodrigo17-rmm.github.io/tp-final/
 
 ## 🛡️ Reglas de seguridad (Firestore)
 
-- **Cualquier persona** puede leer productos (incluso sin autenticarse)
+- **Cualquier persona** puede leer productos y opiniones (incluso sin autenticarse)
 - **Solo el admin** puede crear, editar o eliminar productos
 - **Usuarios autenticados** pueden crear transacciones (solo con su propio `userId`)
 - **Solo el admin** puede leer, actualizar o eliminar transacciones
 - Las transacciones verifican que `request.resource.data.userId == request.auth.uid`
+- **Usuarios autenticados** pueden crear opiniones (solo con su propio `userId` y un `productoId` válido)
+- **Solo el admin** puede actualizar o eliminar opiniones
 
 ---
 

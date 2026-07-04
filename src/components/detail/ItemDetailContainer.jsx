@@ -8,12 +8,18 @@ import {
   onSnapshot,
   doc,
   getDoc,
+  getDocs,
+  addDoc,
+  serverTimestamp,
 } from 'firebase/firestore';
 import { db } from '../../firebase/config';
-import { Spinner, Alert } from 'react-bootstrap';
+import { Spinner, Alert, Form, Button } from 'react-bootstrap';
 import { ArrowLeftIcon, CartIcon } from '../../assets/icons';
 import { useCart } from '../../context/CartContext';
+import { useAuth } from '../../context/AuthContext';
 import estilos from './ItemDetailContainer.module.css';
+
+const RATING_OPTIONS = [1, 2, 3, 4, 5];
 
 const ItemDetailContainer = () => {
   const { id } = useParams();
@@ -22,20 +28,33 @@ const ItemDetailContainer = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const { addToCart } = useCart();
+  const { user } = useAuth();
   const [addedFeedback, setAddedFeedback] = useState(false);
 
   // Opiniones en tiempo real con onSnapshot
   const [opiniones, setOpiniones] = useState([]);
   const [cargandoOpiniones, setCargandoOpiniones] = useState(true);
 
-  // Cleanup del timeout de feedback al desmontar
+  // Control de acceso a la opinión
+  const [comproElProducto, setComproElProducto] = useState(false);
+  const [verificandoCompra, setVerificandoCompra] = useState(true);
+  const [yaOpino, setYaOpino] = useState(false);
+  const [userOpinionId, setUserOpinionId] = useState(null);
+
+  // Formulario de opinión
+  const [opinionForm, setOpinionForm] = useState({ rating: 5, comentario: '' });
+  const [enviandoOpinion, setEnviandoOpinion] = useState(false);
+  const [errorOpinion, setErrorOpinion] = useState(null);
+  const [opinionEnviada, setOpinionEnviada] = useState(false);
+
+  // Cleanup del timeout de feedback del carrito
   useEffect(() => {
     if (!addedFeedback) return;
     const timeoutId = setTimeout(() => setAddedFeedback(false), 1500);
     return () => clearTimeout(timeoutId);
   }, [addedFeedback]);
 
-  // Carga el producto desde Firestore según el id de la URL
+  // Carga el producto desde Firestore
   useEffect(() => {
     const fetchProduct = async () => {
       setLoading(true);
@@ -75,13 +94,102 @@ const ItemDetailContainer = () => {
         setCargandoOpiniones(false);
       },
       () => {
-        // Si la colección 'opiniones' no existe, no hay opiniones
         setCargandoOpiniones(false);
       }
     );
 
     return unsubscribe;
   }, [id]);
+
+  // Verifica si el usuario compró este producto
+  useEffect(() => {
+    const verificarCompra = async () => {
+      if (!user) {
+        setComproElProducto(false);
+        setVerificandoCompra(false);
+        return;
+      }
+
+      try {
+        const q = query(
+          collection(db, 'transacciones'),
+          where('userId', '==', user.uid),
+          where('status', '==', 'completada')
+        );
+        const snapshot = await getDocs(q);
+
+        const compro = snapshot.docs.some((doc) => {
+          const data = doc.data();
+          return data.items?.some((item) => item.id === id);
+        });
+
+        setComproElProducto(compro);
+      } catch {
+        setComproElProducto(false);
+      } finally {
+        setVerificandoCompra(false);
+      }
+    };
+
+    verificarCompra();
+  }, [user, id]);
+
+  // Verifica si el usuario ya opinó sobre este producto
+  useEffect(() => {
+    if (!user) {
+      setYaOpino(false);
+      return;
+    }
+
+    const q = query(
+      collection(db, 'opiniones'),
+      where('productoId', '==', id),
+      where('userId', '==', user.uid)
+    );
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      if (!snapshot.empty) {
+        const doc = snapshot.docs[0];
+        setYaOpino(true);
+        setUserOpinionId(doc.id);
+      } else {
+        setYaOpino(false);
+        setUserOpinionId(null);
+      }
+    });
+
+    return unsubscribe;
+  }, [user, id]);
+
+  const puedeOpinar = !!user && comproElProducto && !yaOpino;
+
+  const handleSubmitOpinion = async (e) => {
+    e.preventDefault();
+    if (!user) return;
+
+    setEnviandoOpinion(true);
+    setErrorOpinion(null);
+
+    try {
+      const opinionData = {
+        productoId: id,
+        userId: user.uid,
+        userEmail: user.email,
+        clienteNombre: user.email?.split('@')[0] || 'Anónimo',
+        rating: opinionForm.rating,
+        comentario: opinionForm.comentario.trim(),
+        createdAt: serverTimestamp(),
+      };
+
+      await addDoc(collection(db, 'opiniones'), opinionData);
+      setOpinionEnviada(true);
+      setOpinionForm({ rating: 5, comentario: '' });
+    } catch {
+      setErrorOpinion('Error al enviar la opinión. Intentá de nuevo.');
+    } finally {
+      setEnviandoOpinion(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -198,15 +306,90 @@ const ItemDetailContainer = () => {
         </div>
       </div>
 
-      {/* Opiniones en tiempo real */}
+      {/* Sección de opiniones */}
       <section className={estilos.opinionesSection}>
         <h3 className={estilos.opinionesTitle}>Opiniones de la comunidad</h3>
 
+        {/* Formulario para opinar (solo si compró y aún no opinó) */}
+        {user && !verificandoCompra && (
+          <>
+            {opinionEnviada ? (
+              <Alert variant="success" dismissible onClose={() => setOpinionEnviada(false)}>
+                ¡Gracias por tu opinión! Se publicó al instante.
+              </Alert>
+            ) : errorOpinion ? (
+              <Alert variant="danger" dismissible onClose={() => setErrorOpinion(null)}>
+                {errorOpinion}
+              </Alert>
+            ) : yaOpino ? (
+              <Alert variant="info" style={{ marginBottom: '1.5rem' }}>
+                Ya dejaste una opinión sobre este producto.
+              </Alert>
+            ) : comproElProducto ? (
+              <div className={estilos.opinionForm}>
+                <h4 className={estilos.opinionFormTitle}>Dejanos tu opinión</h4>
+                <Form onSubmit={handleSubmitOpinion}>
+                  <Form.Group className="mb-3">
+                    <Form.Label>Puntuación</Form.Label>
+                    <div className={estilos.ratingStars}>
+                      {RATING_OPTIONS.map((star) => (
+                        <span
+                          key={star}
+                          className={`${estilos.star} ${star <= opinionForm.rating ? estilos.starActive : ''}`}
+                          onClick={() => setOpinionForm(prev => ({ ...prev, rating: star }))}
+                          role="button"
+                          aria-label={`${star} estrella${star > 1 ? 's' : ''}`}
+                        >
+                          ★
+                        </span>
+                      ))}
+                    </div>
+                  </Form.Group>
+
+                  <Form.Group className="mb-3">
+                    <Form.Label>Comentario</Form.Label>
+                    <Form.Control
+                      as="textarea"
+                      rows={3}
+                      value={opinionForm.comentario}
+                      onChange={(e) =>
+                        setOpinionForm((prev) => ({ ...prev, comentario: e.target.value }))
+                      }
+                      placeholder="Contá tu experiencia con el producto..."
+                      required
+                    />
+                  </Form.Group>
+
+                  <Button
+                    variant="primary"
+                    type="submit"
+                    disabled={enviandoOpinion || !opinionForm.comentario.trim()}
+                  >
+                    {enviandoOpinion ? (
+                      <>
+                        <Spinner size="sm" animation="border" className="me-2" />
+                        Enviando...
+                      </>
+                    ) : (
+                      'Publicar opinión'
+                    )}
+                  </Button>
+                </Form>
+              </div>
+            ) : (
+              <Alert variant="light" style={{ marginBottom: '1.5rem', border: '1px solid var(--border)' }}>
+                Comprá este producto para poder dejar tu opinión.
+              </Alert>
+            )}
+          </>
+        )}
+
+        {/* Lista de opiniones existentes */}
         {cargandoOpiniones ? (
           <p className={estilos.opinionesLoading}>Cargando opiniones...</p>
         ) : opiniones.length === 0 ? (
           <p className={estilos.opinionesEmpty}>
-            Aún no hay reseñas para este producto.
+            Aún no hay reseñas para este producto. {!user && 'Iniciá sesión y compralo para ser el primero en opinar.'}
           </p>
         ) : (
           opiniones.map((op) => (
@@ -217,7 +400,7 @@ const ItemDetailContainer = () => {
               <p className={estilos.opinionText}>{op.comentario}</p>
               {op.rating && (
                 <span className={estilos.opinionRating}>
-                  {op.rating} ★
+                  {'★'.repeat(op.rating)}{'☆'.repeat(5 - op.rating)}
                 </span>
               )}
             </div>
