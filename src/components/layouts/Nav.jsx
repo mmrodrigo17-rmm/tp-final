@@ -1,14 +1,21 @@
 import { NavLink } from 'react-router-dom';
 import { Navbar, Nav as NavBs, Button } from 'react-bootstrap';
-import { CartIcon, SearchIcon } from '../../assets/icons';
+import { CartIcon, SearchIcon, SunIcon, MoonIcon } from '../../assets/icons';
 import { useCart } from '../../context/CartContext';
 import { useAuth } from '../../context/AuthContext';
+import { useTheme } from '../../context/ThemeContext';
 import styles from './Nav.module.css';
 
 const Nav = ({ searchTerm, setSearchTerm }) => {
   const { cart } = useCart();
   const { user, isAuthenticated, isAdmin, logout } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const totalItems = cart.reduce((acc, item) => acc + item.quantity, 0);
+
+  const themeLabel =
+    theme === 'light' ? 'Modo oscuro' :
+    theme === 'dark' ? 'Modo sistema' :
+    'Modo claro';
 
   return (
     <Navbar
@@ -56,6 +63,27 @@ const Nav = ({ searchTerm, setSearchTerm }) => {
             className={styles.searchInput}
           />
         </div>
+
+        <Button
+          variant="outline-secondary"
+          size="sm"
+          onClick={toggleTheme}
+          className="ms-2"
+          title={themeLabel}
+          aria-label={themeLabel}
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '0.3rem',
+            border: '1px solid var(--border)',
+            color: 'var(--text)',
+            background: 'var(--card-bg)',
+          }}
+        >
+          {theme === 'light' ? <MoonIcon size={16} /> :
+           theme === 'dark' ? <SunIcon size={16} /> :
+           <><SunIcon size={14} /><MoonIcon size={14} /></>}
+        </Button>
 
         <NavBs className="ms-2">
           {isAuthenticated ? (
