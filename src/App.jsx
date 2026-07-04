@@ -6,7 +6,6 @@ import { AuthProvider } from './context/AuthContext';
 import Layout from './components/layouts/Layout';
 import ItemListContainer from './components/products/ItemListContainer';
 import ItemDetailContainer from './components/detail/ItemDetailContainer';
-import ProtectedRoute from './components/auth/ProtectedRoute';
 import AdminRoute from './components/auth/AdminRoute';
 import Cart from './pages/Cart';
 import Login from './pages/Login';
@@ -37,14 +36,8 @@ function App() {
                   Uso ":id" para capturar el identificador del producto en la URL */}
               <Route path="producto/:id" element={<ItemDetailContainer />} />
               
-              {/* Defino la ruta del carrito, pero la protejo. 
-                  Envuelvo el componente <Cart /> con mi <ProtectedRoute />.
-                  De esta manera, si intento entrar aquí sin estar autenticado, seré redirigido al inicio. */}
-              <Route path="carrito" element={
-                <ProtectedRoute>
-                  <Cart />
-                </ProtectedRoute>
-              } />
+              {/* Ruta del carrito — visible sin login. Solo se exige auth al finalizar compra. */}
+              <Route path="carrito" element={<Cart />} />
 
               {/* Ruta de inicio de sesión */}
               <Route path="login" element={<Login />} />

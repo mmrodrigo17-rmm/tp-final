@@ -4,8 +4,8 @@ import styled from 'styled-components';
 import { useState } from 'react';
 // Importo mi hook personalizado para acceder al estado global del carrito
 import { useCart } from '../context/CartContext';
-// Importo Link de React Router para poder navegar entre páginas sin recargar el navegador
-import { Link } from 'react-router-dom';
+// Importo Link y useNavigate de React Router para navegación y redirección
+import { Link, useNavigate } from 'react-router-dom';
 // Importo Helmet para SEO dinámico
 import { Helmet } from 'react-helmet-async';
 // Importo React Icons para los botones de interacción
@@ -172,6 +172,9 @@ const Cart = () => {
   // Obtengo el usuario autenticado para el checkout
   const { user } = useAuth();
 
+  // Hook de navegación para redirigir si no hay sesión
+  const navigate = useNavigate();
+
   // Estado del proceso de checkout
   const [checkingOut, setCheckingOut] = useState(false);
   const [errorMsg, setErrorMsg] = useState(null);
@@ -183,8 +186,14 @@ const Cart = () => {
   // y lo voy sumando al acumulador (acc) que arranca en 0.
   const totalPrice = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
 
-  // Manejador del checkout: guarda los items, crea la transacción y muestra la confirmación
+  // Manejador del checkout: si no hay sesión, redirige al login
   const handleCheckout = async () => {
+    // Si el usuario no está autenticado, lo mando al login
+    if (!user) {
+      navigate('/login');
+      return;
+    }
+
     setCheckingOut(true);
     setErrorMsg(null);
 
@@ -290,7 +299,7 @@ const Cart = () => {
         <title>Carrito — Mi Tienda</title>
         <meta name="description" content="Tu carrito de compras en Mi Tienda" />
       </Helmet>
-      <h2>Tu Carrito (Ruta Protegida)</h2>
+      <h2>Tu Carrito</h2>
       
       {/* Contenedor de la lista de productos */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '1.5rem' }}>
