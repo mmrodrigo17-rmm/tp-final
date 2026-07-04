@@ -85,17 +85,35 @@ const TransactionTable = () => {
     });
   }, [transactions, statusFilter, startDate, endDate, emailFilter]);
 
-  // Exportar transacciones filtradas a CSV
+  // Exportar transacciones filtradas a CSV (con detalle de ítems)
   const exportCSV = () => {
-    const headers = ['ID', 'Email', 'Total', 'Estado', 'Cant. Items', 'Fecha'];
-    const rows = filteredTransactions.map(tx => [
-      tx.id,
-      tx.userEmail || '',
-      tx.total?.toFixed(2) ?? '',
-      tx.status,
-      tx.items?.length ?? 0,
-      formatDateCSV(tx.createdAt)
-    ]);
+    const headers = [
+      'ID Transacción', 'Email', 'Estado', 'Fecha',
+      'Producto', 'Precio Unit.', 'Cantidad', 'Subtotal'
+    ];
+    const rows = [];
+
+    filteredTransactions.forEach(tx => {
+      const txId = tx.id;
+      const email = tx.userEmail || '';
+      const status = tx.status;
+      const fecha = formatDateCSV(tx.createdAt);
+
+      if (tx.items && tx.items.length > 0) {
+        tx.items.forEach(item => {
+          rows.push([
+            txId, email, status, fecha,
+            item.title || '',
+            item.price?.toFixed(2) ?? '',
+            item.quantity ?? 0,
+            ((item.price ?? 0) * (item.quantity ?? 0)).toFixed(2)
+          ]);
+        });
+      } else {
+        // Transacción sin ítems (caso borde)
+        rows.push([txId, email, status, fecha, '', '', '', '']);
+      }
+    });
 
     const csvContent = [
       headers.join(','),
