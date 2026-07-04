@@ -22,10 +22,13 @@ const Nav = ({ searchTerm, setSearchTerm }) => {
     <Navbar
       collapseOnSelect
       expand="lg"
-      bg="light"
-      variant="light"
       className="rounded"
-      style={{ padding: '0.5rem 0' }}
+      style={{
+        padding: '0.5rem 0',
+        background: 'var(--bg)',
+        color: 'var(--text)',
+        border: '1px solid var(--border)',
+      }}
     >
       <Navbar.Toggle aria-controls="responsive-navbar-nav" />
       <Navbar.Collapse id="responsive-navbar-nav">
