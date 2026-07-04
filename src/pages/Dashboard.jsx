@@ -190,7 +190,7 @@ const Dashboard = () => {
                         variant="warning"
                         size="sm"
                         className="me-2 d-inline-flex align-items-center justify-content-center"
-                        style={{ minWidth: '85px' }}
+                        style={{ width: '90px' }}
                         onClick={() => handleEdit(product)}
                       >
                         <FaPenToSquare className="me-1" />Editar
@@ -199,7 +199,7 @@ const Dashboard = () => {
                         variant="danger"
                         size="sm"
                         className="d-inline-flex align-items-center justify-content-center"
-                        style={{ minWidth: '85px' }}
+                        style={{ width: '90px' }}
                         onClick={() => handleDeleteClick(product)}
                       >
                         <FaTrashCan className="me-1" />Eliminar
