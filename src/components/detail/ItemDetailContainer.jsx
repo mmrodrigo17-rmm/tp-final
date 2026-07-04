@@ -35,6 +35,13 @@ const ItemDetailContainer = () => {
   // Estado local para feedback visual al agregar al carrito
   const [addedFeedback, setAddedFeedback] = useState(false);
 
+  // Cleanup del timeout de feedback al desmontar
+  useEffect(() => {
+    if (!addedFeedback) return;
+    const id = setTimeout(() => setAddedFeedback(false), 1500);
+    return () => clearTimeout(id);
+  }, [addedFeedback]);
+
   // Uso useEffect para leer el producto desde Firestore.
   // Es clave que en el array de dependencias (al final) ponga [id]. 
   // Así le digo a React: "Si el usuario cambia de producto y el ID de la URL cambia, 
@@ -163,7 +170,6 @@ const ItemDetailContainer = () => {
           onClick={() => {
             addToCart(product, 1);
             setAddedFeedback(true);
-            setTimeout(() => setAddedFeedback(false), 1500);
           }}
           disabled={isOutOfStock}
           style={{

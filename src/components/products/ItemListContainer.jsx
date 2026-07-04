@@ -1,5 +1,5 @@
 // Importo los hooks de React necesarios para manejar el estado interno y el ciclo de vida
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 // Importo useOutletContext para leer el searchTerm que el Layout pasa a los componentes hijos
 // y useLocation para detectar en qué ruta estamos (index vs /productos)
 import { useOutletContext, useLocation } from 'react-router-dom';
@@ -30,7 +30,7 @@ const ItemListContainer = () => {
   // currentPage: página actual del paginado (1-based)
   const [currentPage, setCurrentPage] = useState(1);
   // Cantidad fija de productos por página
-  const itemsPerPage = 8;
+  const ITEMS_PER_PAGE = 8;
 
   // useEffect para leer los productos desde Firestore al montar el componente
   useEffect(() => {
@@ -62,15 +62,18 @@ const ItemListContainer = () => {
     setCurrentPage(1);
   }, [searchTerm]);
 
-  // Filtro los productos por título (case-insensitive) basado en el searchTerm
-  const filteredProducts = products.filter(product =>
-    product.title?.toLowerCase().includes(searchTerm.toLowerCase())
+  // Filtro los productos por título (case-insensitive) basado en el searchTerm, memoizado
+  const filteredProducts = useMemo(
+    () => products.filter(product =>
+      product.title?.toLowerCase().includes(searchTerm.toLowerCase())
+    ),
+    [products, searchTerm]
   );
 
   // Calculo de paginación
-  const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedProducts = filteredProducts.slice(startIndex, startIndex + itemsPerPage);
+  const totalPages = Math.ceil(filteredProducts.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const paginatedProducts = filteredProducts.slice(startIndex, startIndex + ITEMS_PER_PAGE);
 
   // --- Renderizado condicional ---
 

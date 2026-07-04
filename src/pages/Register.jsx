@@ -3,17 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { Container, Row, Col, Form, Button, Alert, Spinner } from 'react-bootstrap';
 import { useAuth } from '../context/AuthContext';
-
-// Mapeo de códigos de error de Firebase Auth a mensajes en español rioplatense
-const getFirebaseErrorMessage = (error) => {
-  const messages = {
-    'auth/email-already-in-use': 'Este correo electrónico ya está registrado',
-    'auth/invalid-email': 'El correo electrónico no es válido',
-    'auth/weak-password': 'La contraseña debe tener al menos 6 caracteres',
-    'auth/network-request-failed': 'Error de conexión. Verificá tu internet',
-  };
-  return messages[error.code] || 'Ocurrió un error inesperado. Intentá de nuevo';
-};
+import { getFirebaseErrorMessage } from '../utils/firebaseErrors';
 
 const Register = () => {
   const { register } = useAuth();

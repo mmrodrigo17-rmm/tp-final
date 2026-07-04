@@ -41,8 +41,11 @@ export const AuthProvider = ({ children }) => {
 
   // Propiedades derivadas del estado de usuario
   const isAuthenticated = !!user;
-  // Por ahora, el admin se determina por email fijo. En el futuro se puede migrar a custom claims.
-  const isAdmin = user?.email === 'admin@gmail.com';
+  // El admin se determina por variable de entorno.
+  // Si no está configurada, nadie es admin (seguridad por defecto).
+  const adminEmail = import.meta.env.VITE_ADMIN_EMAIL;
+  const isAdmin = !!adminEmail && user?.email === adminEmail;
+  // En el futuro migrar a Firebase Custom Claims si se necesita más granularidad.
 
   // Función para iniciar sesión con email y contraseña
   const login = (email, password) => {

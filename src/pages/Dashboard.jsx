@@ -152,10 +152,14 @@ const Dashboard = () => {
             </Col>
           </Row>
 
-          {/* Lista de productos o mensaje si está vacía */}
+          {/* Lista de productos o mensaje según corresponda */}
           {products.length === 0 ? (
             <Alert variant="info">
               No hay productos todavía. Agregá tu primer producto.
+            </Alert>
+          ) : filteredProducts.length === 0 ? (
+            <Alert variant="warning">
+              No hay productos que coincidan con los filtros actuales.
             </Alert>
           ) : (
             <Table striped bordered hover responsive>

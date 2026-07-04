@@ -1,8 +1,26 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Table, Spinner, Alert, Form, Row, Col, Button } from 'react-bootstrap';
 import { FaDownload } from 'react-icons/fa6';
 import { collection, getDocs, query, orderBy } from 'firebase/firestore';
 import { db } from '../../firebase/config';
+
+// Funciones de formateo de fecha (sin dependencias del componente)
+const formatDate = (timestamp) => {
+  if (!timestamp?.toDate) return '-';
+  const date = timestamp.toDate();
+  return date.toLocaleDateString('es-AR', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+};
+
+const formatDateCSV = (timestamp) => {
+  if (!timestamp?.toDate) return '';
+  return timestamp.toDate().toISOString().split('T')[0];
+};
 
 const TransactionTable = () => {
   const [transactions, setTransactions] = useState([]);
@@ -67,26 +85,8 @@ const TransactionTable = () => {
     });
   }, [transactions, statusFilter, startDate, endDate, emailFilter]);
 
-  const formatDate = (timestamp) => {
-    if (!timestamp?.toDate) return '-';
-    const date = timestamp.toDate();
-    return date.toLocaleDateString('es-AR', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
-
-  // Formatea fecha para CSV (ISO sin hora)
-  const formatDateCSV = (timestamp) => {
-    if (!timestamp?.toDate) return '';
-    return timestamp.toDate().toISOString().split('T')[0];
-  };
-
   // Exportar transacciones filtradas a CSV
-  const exportCSV = useCallback(() => {
+  const exportCSV = () => {
     const headers = ['ID', 'Email', 'Total', 'Estado', 'Cant. Items', 'Fecha'];
     const rows = filteredTransactions.map(tx => [
       tx.id,
@@ -111,7 +111,7 @@ const TransactionTable = () => {
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
-  }, [filteredTransactions]);
+  };
 
   // Estado de carga
   if (loading) {

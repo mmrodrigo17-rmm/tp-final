@@ -22,10 +22,6 @@ const Nav = ({ searchTerm, setSearchTerm }) => {
   // Calculo la cantidad total de artículos en el carrito para mostrar en la burbuja/contador.
   const totalItems = cart.reduce((acc, item) => acc + item.quantity, 0);
 
-  const handleLogout = () => {
-    logout();
-  };
-
   return (
     <Navbar collapseOnSelect expand="lg" bg="light" variant="light" className="rounded" style={{ padding: '0.5rem 0' }}>
       
@@ -83,7 +79,7 @@ const Nav = ({ searchTerm, setSearchTerm }) => {
               <Navbar.Text className="d-none d-lg-inline">
                 {user?.email}
               </Navbar.Text>
-              <Button variant="outline-secondary" size="sm" onClick={handleLogout} className="ms-lg-2 mt-2 mt-lg-0">
+              <Button variant="outline-secondary" size="sm" onClick={logout} className="ms-lg-2 mt-2 mt-lg-0">
                 Cerrar Sesión
               </Button>
             </>

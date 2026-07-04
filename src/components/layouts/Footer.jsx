@@ -46,15 +46,13 @@ const TeamCard = styled.div`
 
 // --- Componente Footer ---
 
+const team = [
+  { name: "Rodrigo Morel", role: "Frontend Dev" },
+  { name: "Marcelo Gallardo", role: "UX/UI Designer" },
+  { name: "Enzo Pérez", role: "Backend Dev" }
+];
+
 const Footer = () => {
-  // Defino un arreglo estático con la información de mi equipo de trabajo.
-  // Al tener los datos estructurados en este arreglo de objetos, me resulta mucho más fácil
-  // agregar, quitar o modificar miembros en el futuro sin tener que tocar el código HTML (JSX) de abajo.
-  const team = [
-    { name: "Rodrigo Morel", role: "Frontend Dev" },
-    { name: "Marcelo Gallardo", role: "UX/UI Designer" },
-    { name: "Enzo Pérez", role: "Backend Dev" }
-  ];
 
   return (
     <StyledFooter>

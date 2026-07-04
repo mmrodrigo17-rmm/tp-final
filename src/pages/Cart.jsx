@@ -1,7 +1,7 @@
 // Importo styled-components para escribir CSS directamente dentro del componente
 import styled from 'styled-components';
 // Importo hooks de React
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 // Importo mi hook personalizado para acceder al estado global del carrito
 import { useCart } from '../context/CartContext';
 // Importo Link y useNavigate de React Router para navegación y redirección
@@ -181,10 +181,11 @@ const Cart = () => {
   const [orderComplete, setOrderComplete] = useState(null);
   // orderComplete: { items: [...], total: number } o null
 
-  // Calculo el precio total acumulado de todo el carrito. 
-  // Uso el método reduce() para iterar sobre cada ítem, multiplicando su precio por la cantidad, 
-  // y lo voy sumando al acumulador (acc) que arranca en 0.
-  const totalPrice = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+  // Calculo el precio total acumulado de todo el carrito, memoizado
+  const totalPrice = useMemo(
+    () => cart.reduce((acc, item) => acc + (item.price * item.quantity), 0),
+    [cart]
+  );
 
   // Manejador del checkout: si no hay sesión, redirige al login
   const handleCheckout = async () => {

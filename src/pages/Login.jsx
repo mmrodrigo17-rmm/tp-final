@@ -3,20 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { Container, Row, Col, Form, Button, Alert, Spinner } from 'react-bootstrap';
 import { useAuth } from '../context/AuthContext';
-
-// Mapeo de códigos de error de Firebase Auth a mensajes en español rioplatense
-const getFirebaseErrorMessage = (error) => {
-  const messages = {
-    'auth/invalid-email': 'El correo electrónico no es válido',
-    'auth/user-disabled': 'Esta cuenta ha sido deshabilitada',
-    'auth/user-not-found': 'No se encontró un usuario con ese correo',
-    'auth/wrong-password': 'Contraseña incorrecta',
-    'auth/invalid-credential': 'Credenciales inválidas. Verificá tu correo y contraseña',
-    'auth/too-many-requests': 'Demasiados intentos. Probá de nuevo más tarde',
-    'auth/network-request-failed': 'Error de conexión. Verificá tu internet',
-  };
-  return messages[error.code] || 'Ocurrió un error inesperado. Intentá de nuevo';
-};
+import { getFirebaseErrorMessage } from '../utils/firebaseErrors';
 
 const Login = () => {
   const { login } = useAuth();
