@@ -1,6 +1,6 @@
 # 🛒 Mi Tienda — eCommerce Monumental
 
-Aplicación web de comercio electrónico con catálogo de productos, carrusel en la home, carrito de compras, autenticación de usuarios, panel de administración completo y página de contacto. Construida con React 19, Firebase y Vite 8.
+Aplicación web de comercio electrónico con catálogo de productos, carrusel en la home, carrito de compras, autenticación de usuarios, panel de administración completo, página de contacto, opiniones en tiempo real y tema claro/oscuro con toggle manual. Construida con React 19, Firebase y Vite 8.
 
 ---
 
@@ -27,14 +27,16 @@ Aplicación web de comercio electrónico con catálogo de productos, carrusel en
 
 | Funcionalidad | Descripción |
 |---------------|-------------|
-| **Carrusel en la home** | Slider con 4 productos aleatorios destacados, imágenes con gradiente superpuesto y navegación por flechas/indicadores. Responsive (400px desktop / 250px mobile) |
-| **Catálogo de productos** | Listado paginado (8 productos por página) con imágenes, precios y categorías. Grilla responsive con auto-fit |
+| **Carrusel en la home** | Slider con 4 productos aleatorios destacados, imágenes sin deformar (object-fit contain) con gradiente y navegación por flechas/indicadores. Al hacer clic en un slide navega al detalle del producto |
+| **Catálogo de productos** | Listado paginado (8 productos por página) con **paginación cursor-based** usando Firestore `startAfter` + `getCountFromServer`. Escala a miles de documentos |
 | **Búsqueda en vivo** | Filtro de productos por nombre desde la barra de navegación, con reseteo de paginación automático |
-| **Detalle de producto** | Vista individual con descripción, precio, categoría, indicador de stock disponible (con alerta de bajo stock si es ≤ 5 unidades) y botón para agregar al carrito |
-| **Carrito de compras** | Vista con lista de productos seleccionados, control de cantidades (sumar/restar), eliminación individual, vaciado total y cálculo automático del subtotal por ítem y total general. **Visible sin estar logueado** |
-| **Checkout** | Botón "Finalizar Compra" que registra la transacción en Firestore. Si el usuario no está autenticado, redirige al login. Incluye protección anti-doble-click (botón deshabilitado + spinner), manejo de errores de red y confirmación de compra |
+| **Detalle de producto** | Vista individual con descripción, precio, categoría, stock (con alerta de bajo stock si es ≤ 5 unidades) y botón para agregar al carrito con feedback visual |
+| **Opiniones en tiempo real** | Sección de opiniones en el detalle del producto con **Firestore `onSnapshot`** — las reseñas aparecen automáticamente sin recargar la página |
+| **Carrito de compras** | Vista con lista de productos seleccionados, control de cantidades (sumar/restar con piso en 1), eliminación individual, vaciado total y cálculo automático del subtotal por ítem y total general. **Visible sin estar logueado** |
+| **Checkout** | Botón "Finalizar Compra" que registra la transacción en Firestore. Si el usuario no está autenticado, redirige al login. Incluye protección anti-doble-click (botón deshabilitado + spinner), manejo de errores de red y confirmación de compra con resumen |
 | **Página de Contacto** | Formulario con validación inline (nombre, email con formato, mensaje). Alert de éxito al enviar. Sin backend — feedback visual |
 | **Autenticación** | Registro e inicio de sesión con Firebase Auth. Rol de administrador determinado por variable de entorno |
+| **Tema claro / oscuro** | Toggle manual en la barra de navegación (cicla: claro → oscuro → sigue al sistema). Persiste la elección en `localStorage`. El logo cambia según el tema: `logo.png` para claro, `logo-oscuro.png` para oscuro |
 | **SEO dinámico** | Títulos y meta descriptions por página usando react-helmet-async |
 
 ### Panel de administración
@@ -42,11 +44,11 @@ Aplicación web de comercio electrónico con catálogo de productos, carrusel en
 | Funcionalidad | Descripción |
 |---------------|-------------|
 | **Acceso restringido** | Solo el email configurado en `VITE_ADMIN_EMAIL` (variable de entorno) puede acceder al Dashboard. Si no está configurada, nadie es admin |
-| **ABM de productos** | Listado completo con tabla responsive (imagen, título, precio, stock, categoría, acciones). Botones "Agregar", "Editar" y "Eliminar" con confirmación modal. Carga inicial con spinner |
+| **ABM de productos** | Listado completo con tabla responsive (imagen, título, precio, stock, categoría, acciones). Botones "Agregar", "Editar" y "Eliminar" con modal de confirmación. Carga paginada con el mismo sistema cursor-based |
 | **Filtros de productos** | Filtro por categoría (select con opciones únicas obtenidas de los productos cargados) y filtro por stock mínimo. Mensaje específico si los filtros no matchean ningún producto |
 | **Listado de transacciones** | Pestaña "Transacciones" con tabla de todas las compras realizadas: ID, email del comprador, total, estado, cantidad de ítems y fecha |
 | **Filtros de transacciones** | Por estado (completada/pendiente), por rango de fechas (input date desde/hasta) y búsqueda por email |
-| **Exportación CSV** | Botón "Exportar CSV" que descarga las transacciones visibles (según filtros aplicados) en formato CSV |
+| **Exportación CSV** | Botón "Exportar CSV" que descarga las transacciones visibles (según filtros aplicados) en formato CSV. **Cada fila es un ítem individual** de la transacción con: ID, email, estado, fecha, producto, precio unitario, cantidad y subtotal |
 
 ---
 
@@ -58,12 +60,13 @@ Aplicación web de comercio electrónico con catálogo de productos, carrusel en
 | **Vite** | 8 | Bundler y entorno de desarrollo |
 | **React Router** | 7 | Navegación SPA con rutas anidadas (Layout + Outlet) |
 | **Firebase Auth** | — | Autenticación de usuarios con email y contraseña |
-| **Firestore** | — | Base de datos NoSQL (colecciones: `productos`, `transacciones`) |
+| **Firestore** | — | Base de datos NoSQL (colecciones: `productos`, `transacciones`, `opiniones`) |
 | **React-Bootstrap** | 5 | Componentes de UI responsivos (grid, tabs, tablas, modales, formularios, carrusel) |
-| **styled-components** | 6 | Estilos con CSS-in-JS y props transientes |
-| **React Icons** | — | Iconografía (Font Awesome 6) |
+| **CSS Modules** | — | Estilos scoped por componente, sin runtime overhead. Variables CSS globales con soporte de tema oscuro vía `prefers-color-scheme` y `data-theme` |
+| **SVG inline** | — | Iconos livianos como componentes React (Lucide), sin librerías externas de iconos |
 | **react-helmet-async** | — | SEO dinámico (títulos y meta tags por página) |
-| **GitHub Pages** | — | Hosting del build de producción |
+| **gh-pages** | — | Publicación del build de producción en GitHub Pages |
+| **GitHub Actions** | — | CI/CD automático con deploy en cada push a main |
 
 ---
 
@@ -74,50 +77,69 @@ tp-final/
 ├── public/
 │   └── favicon.svg
 ├── scripts/
-│   └── seed-productos.html        ← Script para poblar Firestore con productos de FakeStore API
+│   └── seed-productos.html            ← Script para poblar Firestore con productos de FakeStore API
 ├── src/
+│   ├── assets/
+│   │   ├── icons/
+│   │   │   └── index.jsx              ← Iconos SVG inline (Cart, Plus, Minus, Trash, Edit, Search, Sun, Moon…)
+│   │   ├── logo.png                   ← Logo para tema claro
+│   │   └── logo-oscuro.png            ← Logo para tema oscuro
 │   ├── components/
+│   │   ├── Paginacion.jsx             ← Componente de paginación reutilizable
 │   │   ├── admin/
-│   │   │   ├── ProductForm.jsx     ← Formulario crear/editar producto
-│   │   │   ├── ProductFilters.jsx  ← Filtros de categoría y stock mínimo
-│   │   │   └── TransactionTable.jsx ← Tabla de transacciones con filtros y exportación CSV
+│   │   │   ├── ProductForm.jsx        ← Formulario crear/editar producto con validación
+│   │   │   ├── ProductFilters.jsx     ← Filtros de categoría y stock mínimo
+│   │   │   └── TransactionTable.jsx   ← Tabla de transacciones con filtros y exportación CSV
 │   │   ├── auth/
-│   │   │   ├── ProtectedRoute.jsx  ← Guard para rutas que requieren autenticación
-│   │   │   └── AdminRoute.jsx      ← Guard para rutas que requieren rol admin
+│   │   │   └── AdminRoute.jsx         ← Guard para rutas que requieren rol admin
 │   │   ├── detail/
-│   │   │   └── ItemDetailContainer.jsx ← Vista detalle de producto con indicador de stock
+│   │   │   └── ItemDetailContainer.jsx ← Detalle de producto con stock, opiniones (onSnapshot) y carrito
 │   │   ├── layouts/
-│   │   │   ├── Layout.jsx          ← Layout principal con header/nav/outlet/footer
-│   │   │   ├── Nav.jsx             ← Navbar responsive con buscador, badge del carrito y auth
-│   │   │   └── Footer.jsx          ← Footer con datos del equipo
+│   │   │   ├── Layout.jsx             ← Layout principal con header (logo + nav) / outlet / footer
+│   │   │   ├── Nav.jsx                ← Navbar responsive con buscador, badge del carrito, auth y toggle de tema
+│   │   │   ├── Footer.jsx             ← Footer con datos del equipo
+│   │   │   ├── Layout.module.css
+│   │   │   ├── Nav.module.css
+│   │   │   └── Footer.module.css
 │   │   └── products/
-│   │       ├── Item.jsx            ← Card individual de producto
-│   │       └── ItemListContainer.jsx ← Catálogo con búsqueda, filtro y paginación
+│   │       ├── Item.jsx               ← Card individual de producto
+│   │       ├── ItemList.jsx           ← Grilla de productos (renderiza Items)
+│   │       ├── ItemListContainer.jsx  ← Catálogo con paginación cursor-based + búsqueda
+│   │       ├── Item.module.css
+│   │       ├── ItemList.module.css
+│   │       └── ItemListContainer.module.css
 │   ├── context/
-│   │   ├── AuthContext.jsx         ← Contexto de autenticación Firebase
-│   │   └── CartContext.jsx         ← Contexto del carrito (estado local)
+│   │   ├── AuthContext.jsx            ← Contexto de autenticación Firebase
+│   │   ├── CartContext.jsx            ← Contexto del carrito (estado local)
+│   │   └── ThemeContext.jsx           ← Contexto de tema claro/oscuro/sistema con persistencia
 │   ├── firebase/
-│   │   └── config.js              ← Configuración e inicialización de Firebase (solo env vars)
+│   │   └── config.js                  ← Configuración e inicialización de Firebase (solo env vars)
+│   ├── hooks/
+│   │   └── usePaginacion.jsx          ← Hook de paginación cursor-based con Firestore (startAfter + getCountFromServer)
 │   ├── pages/
-│   │   ├── Cart.jsx               ← Carrito con checkout, control de cantidades y confirmación
-│   │   ├── Contacto.jsx           ← Formulario de contacto con validación inline
-│   │   ├── Dashboard.jsx          ← Panel admin con tabs Productos + Transacciones
-│   │   ├── Home.jsx               ← Home con carrusel de productos aleatorios + catálogo
-│   │   ├── Login.jsx              ← Inicio de sesión
-│   │   └── Register.jsx           ← Registro de usuario
+│   │   ├── Cart.jsx                   ← Carrito con checkout, control de cantidades y confirmación
+│   │   ├── Contacto.jsx               ← Formulario de contacto con validación inline
+│   │   ├── Dashboard.jsx              ← Panel admin con tabs Productos (paginado) + Transacciones
+│   │   ├── Home.jsx                   ← Home con carrusel de productos aleatorios + catálogo
+│   │   ├── Login.jsx                  ← Inicio de sesión
+│   │   ├── Register.jsx               ← Registro de usuario
+│   │   ├── Cart.module.css
+│   │   ├── Home.module.css
+│   │   ├── Login.module.css
+│   │   └── Register.module.css
 │   ├── services/
-│   │   └── checkoutService.js     ← Lógica de creación de transacciones en Firestore
+│   │   └── checkoutService.js         ← Lógica de creación de transacciones en Firestore
 │   ├── utils/
-│   │   └── firebaseErrors.js      ← Mapeo de errores Firebase a mensajes en español
-│   ├── App.jsx                    ← Router principal con todas las rutas
-│   ├── index.css                  ← Estilos globales y variables CSS
-│   └── main.jsx                   ← Entry point
-├── openspec/                       ← Artefactos de especificación SDD
-├── .env.example                    ← Template de variables de entorno
-├── .github/workflows/deploy.yml    ← CI/CD con GitHub Actions
-├── firestore.rules                 ← Reglas de seguridad de Firestore
+│   │   └── firebaseErrors.js          ← Mapeo de errores Firebase a mensajes en español
+│   ├── App.jsx                        ← Router principal con todas las rutas
+│   ├── index.css                      ← Variables CSS + tema oscuro + overrides Bootstrap
+│   └── main.jsx                       ← Entry point (HelmetProvider + ThemeProvider)
+├── openspec/                           ← Artefactos de especificación SDD
+├── .env.example                        ← Template de variables de entorno
+├── .github/workflows/deploy.yml        ← CI/CD con GitHub Actions
+├── firestore.rules                     ← Reglas de seguridad de Firestore
 ├── index.html
-├── vite.config.js                  ← Configuración base: '/tp-final/'
+├── vite.config.js                      ← Configuración base: '/tp-final/'
 └── package.json
 ```
 
@@ -255,17 +277,19 @@ El servidor arranca en `http://localhost:5173/tp-final/`.
 Flujo de prueba recomendado:
 
 1. **Registrar un usuario** → **Register**
-2. **Explorar productos** → navegá el catálogo, usá la búsqueda, revisá el detalle
-3. **Ver carrusel** → en la home se muestran 4 productos aleatorios destacados
-4. **Agregar al carrito** → desde el detalle, agregá productos
-5. **Ir al carrito** → `/carrito` — ajustá cantidades, eliminá productos
-6. **Ir a contacto** → `/contacto` — probá el formulario con validación
-7. **Finalizar compra** → **Finalizar Compra** → verificá la confirmación
-8. **Iniciar sesión como admin** → `admin@gmail.com` / `1234`
-9. **Dashboard** → `/dashboard` — explorá Productos y Transacciones
-10. **ABM productos** → agregá, editá y eliminá productos
-11. **Filtrar** → categoría y stock mínimo en productos; estado/fecha/email en transacciones
-12. **Exportar CSV** → en Transacciones, **Exportar CSV**
+2. **Explorar productos** → navegá el catálogo (paginado), usá la búsqueda
+3. **Ver carrusel** → en la home se muestran 4 productos aleatorios destacados — clickeables
+4. **Ver opiniones** → en el detalle de un producto, las reseñas aparecen en tiempo real
+5. **Agregar al carrito** → desde el detalle, agregá productos
+6. **Ir al carrito** → `/carrito` — ajustá cantidades, eliminá productos
+7. **Ir a contacto** → `/contacto` — probá el formulario con validación
+8. **Finalizar compra** → **Finalizar Compra** → verificá la confirmación
+9. **Iniciar sesión como admin** → `admin@gmail.com` / `1234`
+10. **Dashboard** → `/dashboard` — explorá Productos (paginados) y Transacciones
+11. **ABM productos** → agregá, editá y eliminá productos
+12. **Filtrar** → categoría y stock mínimo en productos; estado/fecha/email en transacciones
+13. **Exportar CSV** → en Transacciones, **Exportar CSV** — una fila por ítem
+14. **Probar tema oscuro** → clickeá el botón 🌙/☀️ en la barra de navegación
 
 ---
 
