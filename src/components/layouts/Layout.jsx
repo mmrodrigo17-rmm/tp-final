@@ -11,8 +11,9 @@ const Layout = () => {
   return (
     <div className={estilos.wrapper}>
       <header className={estilos.header}>
-        <Link to="/" style={{ textDecoration: 'none', display: 'inline-block' }}>
+        <Link to="/" className={estilos.brandLink}>
           <img src={logo} alt="Mi Tienda Monumental" className={estilos.logo} />
+          <span className={estilos.brandName}>Mi Tienda Monumental</span>
         </Link>
         <Nav searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
       </header>
