@@ -10,18 +10,12 @@ const Item = ({ product }) => {
   return (
     // Contenedor principal de la tarjeta (card) del producto.
     // Le aplico unos estilos en línea básicos para darle un borde sutil, esquinas redondeadas y centrar el contenido.
-    <div style={{ 
-      border: '1px solid #ddd', 
-      padding: '1rem', 
-      borderRadius: '8px', 
-      textAlign: 'center',
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center' 
-    }}>
+    <div style={{ border: '1px solid #ddd', padding: '1rem', borderRadius: '8px', textAlign: 'center' }}>
       
-      {/* Renderizo la imagen del producto */}
-      <img src={product.image} alt={product.title} style={{ height: '150px', objectFit: 'contain', margin: '0 auto' }} />
+      {/* Renderizo la imagen del producto obtenida de la API.
+          El atributo "objectFit: 'contain'" es clave aquí: garantiza que la imagen se adapte 
+          a los 150px de altura sin deformarse ni recortarse. */}
+      <img src={product.image} alt={product.title} style={{ height: '150px', objectFit: 'contain' }} />
       
       {/* Renderizo el título del producto.
           Como la FakeStore API a veces devuelve títulos larguísimos que rompen el diseño de la grilla,

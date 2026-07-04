@@ -43,10 +43,15 @@ const TransactionTable = () => {
 
   const filteredTransactions = useMemo(() => {
     return transactions.filter(tx => {
+      // Filtro por estado
       if (statusFilter && tx.status !== statusFilter) return false;
+
+      // Filtro por email
       if (emailFilter && tx.userEmail) {
         if (!tx.userEmail.toLowerCase().includes(emailFilter.toLowerCase())) return false;
       }
+
+      // Filtro por rango de fechas
       if (startDate && tx.createdAt?.toDate) {
         const txDate = tx.createdAt.toDate();
         const start = new Date(startDate + 'T00:00:00');
@@ -57,6 +62,7 @@ const TransactionTable = () => {
         const end = new Date(endDate + 'T23:59:59.999');
         if (txDate > end) return false;
       }
+
       return true;
     });
   }, [transactions, statusFilter, startDate, endDate, emailFilter]);
@@ -73,11 +79,13 @@ const TransactionTable = () => {
     });
   };
 
+  // Formatea fecha para CSV (ISO sin hora)
   const formatDateCSV = (timestamp) => {
     if (!timestamp?.toDate) return '';
     return timestamp.toDate().toISOString().split('T')[0];
   };
 
+  // Exportar transacciones filtradas a CSV
   const exportCSV = useCallback(() => {
     const headers = ['ID', 'Email', 'Total', 'Estado', 'Cant. Items', 'Fecha'];
     const rows = filteredTransactions.map(tx => [
@@ -105,6 +113,7 @@ const TransactionTable = () => {
     URL.revokeObjectURL(url);
   }, [filteredTransactions]);
 
+  // Estado de carga
   if (loading) {
     return (
       <div className="text-center mt-4">
@@ -115,6 +124,7 @@ const TransactionTable = () => {
     );
   }
 
+  // Error al cargar
   if (error) {
     return (
       <Alert variant="danger" dismissible onClose={() => setError(null)} className="mt-3">
@@ -125,37 +135,59 @@ const TransactionTable = () => {
 
   return (
     <>
+      {/* Barra de filtros */}
       <Row className="mb-3 g-2">
         <Col md={3}>
-          <Form.Select value={statusFilter} onChange={e => setStatusFilter(e.target.value)}>
+          <Form.Select
+            value={statusFilter}
+            onChange={e => setStatusFilter(e.target.value)}
+            aria-label="Filtrar por estado"
+          >
             <option value="">Todas</option>
             <option value="completada">Completada</option>
             <option value="pendiente">Pendiente</option>
           </Form.Select>
         </Col>
         <Col md={2}>
-          <Form.Control type="date" value={startDate} onChange={e => setStartDate(e.target.value)} />
+          <Form.Control
+            type="date"
+            value={startDate}
+            onChange={e => setStartDate(e.target.value)}
+            placeholder="Fecha inicio"
+          />
         </Col>
         <Col md={2}>
-          <Form.Control type="date" value={endDate} onChange={e => setEndDate(e.target.value)} />
+          <Form.Control
+            type="date"
+            value={endDate}
+            onChange={e => setEndDate(e.target.value)}
+            placeholder="Fecha fin"
+          />
         </Col>
         <Col md={3}>
-          <Form.Control type="search" value={emailFilter} onChange={e => setEmailFilter(e.target.value)} placeholder="Buscar por email..." />
+          <Form.Control
+            type="search"
+            value={emailFilter}
+            onChange={e => setEmailFilter(e.target.value)}
+            placeholder="Buscar por email..."
+          />
         </Col>
       </Row>
 
+      {/* Botón de exportar CSV */}
       {filteredTransactions.length > 0 && (
         <div className="text-end mb-2">
-          <Button variant="success" size="sm" onClick={exportCSV} style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', whiteSpace: 'nowrap' }}>
-            <FaDownload style={{ marginRight: '5px' }} />Exportar CSV
+          <Button variant="success" size="sm" onClick={exportCSV}>
+            <FaDownload className="me-1" />Exportar CSV
           </Button>
         </div>
       )}
 
+      {/* Contenido de la tabla */}
       {transactions.length === 0 ? (
         <Alert variant="info">No hay transacciones</Alert>
       ) : filteredTransactions.length === 0 ? (
-        <Alert variant="info">No se encontraron transacciones</Alert>
+        <Alert variant="info">No se encontraron transacciones con los filtros seleccionados</Alert>
       ) : (
         <Table striped bordered hover responsive>
           <thead>
@@ -171,7 +203,9 @@ const TransactionTable = () => {
           <tbody>
             {filteredTransactions.map(tx => (
               <tr key={tx.id}>
-                <td>{tx.id.substring(0, 8)}...</td>
+                <td style={{ fontFamily: 'monospace', fontSize: '0.85rem' }}>
+                  {tx.id.substring(0, 8)}...
+                </td>
                 <td>{tx.userEmail || '-'}</td>
                 <td>${tx.total?.toFixed(2) ?? '-'}</td>
                 <td>{tx.status}</td>

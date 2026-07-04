@@ -8,8 +8,6 @@ import { FaCartShopping, FaMagnifyingGlass } from 'react-icons/fa6';
 // Importo mis custom hooks para poder leer el estado global del carrito y de la sesión del usuario.
 import { useCart } from '../../context/CartContext';
 import { useAuth } from '../../context/AuthContext';
-// Importo toggle de tema dark/light
-import ThemeToggle from './ThemeToggle';
 // Importo los estilos usando CSS Modules. Esto asegura que estas clases 
 // solo afecten a este componente y no rompan los estilos en otras partes de la app.
 import styles from './Nav.module.css';
@@ -44,22 +42,22 @@ const Nav = ({ searchTerm, setSearchTerm }) => {
           {/* Uso el parámetro "as" de Bootstrap para que <NavBs.Link> renderice 
               un <NavLink> de React Router en lugar de un <a> genérico.
               Así mantengo el ruteo interno sin recargar la página. */}
-          <NavBs.Link as={NavLink} to="/" end className="whitespace-nowrap">
+          <NavBs.Link as={NavLink} to="/" end>
             Inicio
           </NavBs.Link>
-          <NavBs.Link as={NavLink} to="/productos" className="whitespace-nowrap">
+          <NavBs.Link as={NavLink} to="/productos">
             Productos
           </NavBs.Link>
-          <NavBs.Link as={NavLink} to="/carrito" style={{ display: 'flex', alignItems: 'center', whiteSpace: 'nowrap' }}>
+          <NavBs.Link as={NavLink} to="/carrito">
             {/* Icono de carrito de compras con contador de artículos */}
-            <FaCartShopping style={{ marginRight: '8px' }} />
+            <FaCartShopping className="me-1" />
             Carrito
             {totalItems > 0 && <span className={styles.badge}>{totalItems}</span>}
           </NavBs.Link>
           
           {/* Link al panel de administración — solo visible para usuarios admin */}
           {isAdmin && (
-            <NavBs.Link as={NavLink} to="/dashboard" className="whitespace-nowrap">
+            <NavBs.Link as={NavLink} to="/dashboard">
               Panel Admin
             </NavBs.Link>
           )}
@@ -79,7 +77,6 @@ const Nav = ({ searchTerm, setSearchTerm }) => {
 
         {/* Sección de autenticación: se alinea a la derecha */}
         <NavBs className="ms-2">
-          <ThemeToggle />
           {isAuthenticated ? (
             // Muestro el email del usuario logueado y el botón para cerrar sesión
             <>

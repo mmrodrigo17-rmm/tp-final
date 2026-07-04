@@ -1,5 +1,6 @@
-import { useState, useEffect, useMemo, useRef } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Helmet } from 'react-helmet-async';
+import { Container, Table, Button, Modal, Spinner, Alert, Tabs, Tab, Row, Col, Form } from 'react-bootstrap';
 import { FaPlus, FaPenToSquare, FaTrashCan } from 'react-icons/fa6';
 import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc } from 'firebase/firestore';
 import { db } from '../firebase/config';
@@ -12,9 +13,6 @@ const Dashboard = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
-  // Tab activa
-  const [activeTab, setActiveTab] = useState('productos');
 
   // Estado del modal de agregar/editar
   const [showModal, setShowModal] = useState(false);
@@ -29,10 +27,6 @@ const Dashboard = () => {
 
   // Estado de filtros de productos
   const [productFilters, setProductFilters] = useState({ category: '', minStock: '' });
-
-  // Refs para modales DaisyUI
-  const productModalRef = useRef(null);
-  const deleteModalRef = useRef(null);
 
   // Productos filtrados por categoría y stock mínimo
   const filteredProducts = useMemo(() => {
@@ -61,23 +55,6 @@ const Dashboard = () => {
   useEffect(() => {
     fetchProducts();
   }, []);
-
-  // Control de modales con ref
-  useEffect(() => {
-    if (showModal) {
-      productModalRef.current?.showModal();
-    } else {
-      productModalRef.current?.close();
-    }
-  }, [showModal]);
-
-  useEffect(() => {
-    if (showDeleteModal) {
-      deleteModalRef.current?.showModal();
-    } else {
-      deleteModalRef.current?.close();
-    }
-  }, [showDeleteModal]);
 
   // Abro el modal en modo "agregar"
   const handleAdd = () => {
@@ -109,7 +86,7 @@ const Dashboard = () => {
       }
       setShowModal(false);
       setEditingProduct(null);
-      await fetchProducts();
+      await fetchProducts(); // Recargo la lista
     } catch (err) {
       setError('Error al guardar el producto. Intentá de nuevo.');
     } finally {
@@ -126,7 +103,7 @@ const Dashboard = () => {
       await deleteDoc(doc(db, 'productos', deletingProduct.id));
       setShowDeleteModal(false);
       setDeletingProduct(null);
-      await fetchProducts();
+      await fetchProducts(); // Recargo la lista
     } catch (err) {
       setError('Error al eliminar el producto. Intentá de nuevo.');
     } finally {
@@ -139,126 +116,121 @@ const Dashboard = () => {
   // Estado de carga inicial
   if (loading) {
     return (
-      <div className="text-center mt-20">
-        <span className="loading loading-spinner loading-lg"></span>
-      </div>
+      <Container className="text-center mt-5">
+        <Spinner animation="border" role="status">
+          <span className="visually-hidden">Cargando productos...</span>
+        </Spinner>
+      </Container>
     );
   }
 
   return (
-    <div className="container mx-auto px-4">
+    <Container>
       <Helmet>
         <title>Panel de Administración — Mi Tienda</title>
       </Helmet>
-      <h2 className="text-2xl font-bold mb-6">Panel de Administración</h2>
+      <h2 className="mb-4">Panel de Administración</h2>
 
       {/* Alerta de error */}
       {error && (
-        <div className="alert alert-error mb-4">
-          <span>{error}</span>
-          <button className="btn btn-ghost btn-xs" onClick={() => setError(null)}>✕</button>
-        </div>
+        <Alert variant="danger" dismissible onClose={() => setError(null)}>
+          {error}
+        </Alert>
       )}
 
-      {/* Tabs DaisyUI */}
-      <div role="tablist" className="tabs tabs-bordered mb-6">
-        <button
-          role="tab"
-          className={`tab ${activeTab === 'productos' ? 'tab-active' : ''}`}
-          onClick={() => setActiveTab('productos')}
-        >
-          Productos
-        </button>
-        <button
-          role="tab"
-          className={`tab ${activeTab === 'transacciones' ? 'tab-active' : ''}`}
-          onClick={() => setActiveTab('transacciones')}
-        >
-          Transacciones
-        </button>
-      </div>
-
-      {/* Contenido de la pestaña Productos */}
-      {activeTab === 'productos' && (
-        <>
+      <Tabs defaultActiveKey="productos" className="mb-3">
+        <Tab eventKey="productos" title="Productos">
           {/* Botón para agregar producto con icono */}
-          <button className="btn btn-primary mb-4 gap-2 whitespace-nowrap inline-flex items-center" onClick={handleAdd}>
-            <FaPlus />Agregar Producto
-          </button>
+          <Button variant="primary" className="mb-3 d-inline-flex align-items-center" onClick={handleAdd}>
+            <FaPlus className="me-2" />Agregar Producto
+          </Button>
 
           {/* Filtros de productos */}
-          <div className="mb-4 max-w-2xl">
-            <ProductFilters products={products} onFilter={setProductFilters} />
-          </div>
+          <Row className="mb-3">
+            <Col md={8}>
+              <ProductFilters products={products} onFilter={setProductFilters} />
+            </Col>
+          </Row>
 
           {/* Lista de productos o mensaje si está vacía */}
           {products.length === 0 ? (
-            <div className="alert alert-info">
+            <Alert variant="info">
               No hay productos todavía. Agregá tu primer producto.
-            </div>
+            </Alert>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="table table-zebra">
-                <thead>
-                  <tr>
-                    <th>Imagen</th>
-                    <th>Título</th>
-                    <th>Precio</th>
-                    <th>Stock</th>
-                    <th>Categoría</th>
-                    <th>Acciones</th>
+            <Table striped bordered hover responsive>
+              <thead>
+                <tr>
+                  <th>Imagen</th>
+                  <th>Título</th>
+                  <th>Precio</th>
+                  <th>Stock</th>
+                  <th>Categoría</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredProducts.map(product => (
+                  <tr key={product.id}>
+                    <td>
+                      {product.image && (
+                        <img
+                          src={product.image}
+                          alt={product.title}
+                          style={{ width: 50, height: 50, objectFit: 'cover' }}
+                        />
+                      )}
+                    </td>
+                    <td>{product.title}</td>
+                    <td>${product.price}</td>
+                    <td>{product.stock}</td>
+                    <td>{product.category}</td>
+                    <td>
+                      <Button
+                        variant="warning"
+                        size="sm"
+                        className="me-2 d-inline-flex align-items-center"
+                        onClick={() => handleEdit(product)}
+                      >
+                        <FaPenToSquare className="me-1" />Editar
+                      </Button>
+                      <Button
+                        variant="danger"
+                        size="sm"
+                        className="d-inline-flex align-items-center"
+                        onClick={() => handleDeleteClick(product)}
+                      >
+                        <FaTrashCan className="me-1" />Eliminar
+                      </Button>
+                    </td>
                   </tr>
-                </thead>
-                <tbody>
-                  {filteredProducts.map(product => (
-                    <tr key={product.id}>
-                      <td>
-                        {product.image && (
-                          <img
-                            src={product.image}
-                            alt={product.title}
-                            className="w-[50px] h-[50px] object-cover rounded"
-                          />
-                        )}
-                      </td>
-                      <td>{product.title}</td>
-                      <td>${product.price}</td>
-                      <td>{product.stock}</td>
-                      <td>{product.category}</td>
-                      <td className="whitespace-nowrap">
-                        <button
-                          className="btn btn-warning btn-sm me-2 gap-2 whitespace-nowrap"
-                          onClick={() => handleEdit(product)}
-                        >
-                          <FaPenToSquare />Editar
-                        </button>
-                        <button
-                          className="btn btn-error btn-sm gap-2 whitespace-nowrap"
-                          onClick={() => handleDeleteClick(product)}
-                        >
-                          <FaTrashCan />Eliminar
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                ))}
+              </tbody>
+            </Table>
           )}
-        </>
-      )}
+        </Tab>
 
-      {/* Contenido de la pestaña Transacciones */}
-      {activeTab === 'transacciones' && (
-        <TransactionTable />
-      )}
+        <Tab eventKey="transacciones" title="Transacciones">
+          <TransactionTable />
+        </Tab>
+      </Tabs>
 
       {/* Modal para agregar/editar producto */}
-      <dialog ref={productModalRef} className={`modal ${showModal ? 'modal-open' : ''}`}>
-        <div className="modal-box">
-          <h3 className="font-bold text-lg mb-4">
-            {editingProduct ? 'Editar' : 'Agregar'}
-          </h3>
+      <Modal
+        show={showModal}
+        onHide={() => {
+          if (!operationLoading) {
+            setShowModal(false);
+            setEditingProduct(null);
+          }
+        }}
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>
+            {editingProduct ? 'Editar Producto' : 'Agregar Producto'}
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
           <ProductForm
             initialData={editingProduct}
             onSave={handleSave}
@@ -268,54 +240,58 @@ const Dashboard = () => {
             }}
             loading={operationLoading}
           />
-        </div>
-        <form method="dialog" className="modal-backdrop">
-          <button onClick={() => { setShowModal(false); setEditingProduct(null); }}>close</button>
-        </form>
-      </dialog>
+        </Modal.Body>
+      </Modal>
 
       {/* Modal de confirmación de eliminación */}
-      <dialog ref={deleteModalRef} className={`modal ${showDeleteModal ? 'modal-open' : ''}`}>
-        <div className="modal-box">
-          <h3 className="font-bold text-lg mb-4">Confirmar Eliminación</h3>
+      <Modal
+        show={showDeleteModal}
+        onHide={() => {
+          if (!operationLoading) {
+            setShowDeleteModal(false);
+            setDeletingProduct(null);
+          }
+        }}
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>Confirmar Eliminación</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
           {deletingProduct && (
             <p>
               ¿Estás seguro de eliminar <strong>"{deletingProduct.title}"</strong>?
               Esta acción no se puede deshacer.
             </p>
           )}
-          <div className="modal-action">
-            <button
-              className="btn btn-ghost"
-              onClick={() => {
-                setShowDeleteModal(false);
-                setDeletingProduct(null);
-              }}
-              disabled={operationLoading}
-            >
-              Cancelar
-            </button>
-            <button
-              className="btn btn-error"
-              onClick={handleDeleteConfirm}
-              disabled={operationLoading}
-            >
-              {operationLoading ? (
-                <>
-                  <span className="loading loading-spinner loading-sm me-2"></span>
-                  Eliminando...
-                </>
-              ) : (
-                'Eliminar'
-              )}
-            </button>
-          </div>
-        </div>
-        <form method="dialog" className="modal-backdrop">
-          <button onClick={() => { setShowDeleteModal(false); setDeletingProduct(null); }}>close</button>
-        </form>
-      </dialog>
-    </div>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button
+            variant="secondary"
+            onClick={() => {
+              setShowDeleteModal(false);
+              setDeletingProduct(null);
+            }}
+            disabled={operationLoading}
+          >
+            Cancelar
+          </Button>
+          <Button
+            variant="danger"
+            onClick={handleDeleteConfirm}
+            disabled={operationLoading}
+          >
+            {operationLoading ? (
+              <>
+                <Spinner size="sm" animation="border" className="me-2" />
+                Eliminando...
+              </>
+            ) : (
+              'Eliminar'
+            )}
+          </Button>
+        </Modal.Footer>
+      </Modal>
+    </Container>
   );
 };
 

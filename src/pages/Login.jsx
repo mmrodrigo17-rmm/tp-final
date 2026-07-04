@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
+import { Container, Row, Col, Form, Button, Alert, Spinner } from 'react-bootstrap';
 import { useAuth } from '../context/AuthContext';
 
-// Mapeo de códigos de error de Firebase Auth a mensajes en español
+// Mapeo de códigos de error de Firebase Auth a mensajes en español rioplatense
 const getFirebaseErrorMessage = (error) => {
   const messages = {
     'auth/invalid-email': 'El correo electrónico no es válido',
@@ -21,11 +22,16 @@ const Login = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
 
+  // Estado del formulario
   const [formData, setFormData] = useState({ email: '', password: '' });
+  // Errores de validación por campo
   const [errors, setErrors] = useState({});
+  // Error global del formulario (errores de Firebase)
   const [submitError, setSubmitError] = useState('');
+  // Estado de carga mientras se procesa el login
   const [loading, setLoading] = useState(false);
 
+  // Valido los campos del formulario antes de enviar
   const validate = () => {
     const newErrors = {};
     if (!formData.email.trim()) {
@@ -40,14 +46,17 @@ const Login = () => {
     return Object.keys(newErrors).length === 0;
   };
 
+  // Manejo los cambios en los inputs
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+    // Limpio el error del campo cuando el usuario empieza a escribir
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: '' }));
     }
   };
 
+  // Manejo el envío del formulario
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitError('');
@@ -57,7 +66,7 @@ const Login = () => {
     setLoading(true);
     try {
       await login(formData.email, formData.password);
-      navigate('/');
+      navigate('/'); // Redirijo al inicio tras login exitoso
     } catch (error) {
       setSubmitError(getFirebaseErrorMessage(error));
     } finally {
@@ -66,79 +75,63 @@ const Login = () => {
   };
 
   return (
-    <div className="container mx-auto px-4">
+    <Container>
       <Helmet>
         <title>Iniciar Sesión — Mi Tienda</title>
       </Helmet>
-      <div className="flex justify-center mt-20">
-        <div className="w-full max-w-md bg-base-100 p-8 rounded-xl shadow-lg">
-          <h2 className="text-2xl font-bold mb-6 text-center">Iniciar Sesión</h2>
+      <Row className="justify-content-center mt-5">
+        <Col xs={12} md={6} lg={4}>
+          <h2 className="mb-4">Iniciar Sesión</h2>
 
-          {submitError && (
-            <div className="alert alert-error mb-4">
-              <span>{submitError}</span>
-            </div>
-          )}
+          {submitError && <Alert variant="danger">{submitError}</Alert>}
 
-          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-            <div className="form-control">
-              <label className="label">
-                <span className="label-text">Correo electrónico</span>
-              </label>
-              <input
+          <Form onSubmit={handleSubmit}>
+            <Form.Group className="mb-3">
+              <Form.Label>Correo electrónico</Form.Label>
+              <Form.Control
                 type="email"
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
+                isInvalid={!!errors.email}
                 placeholder="tu@correo.com"
-                className={`input input-bordered w-full ${errors.email ? 'input-error' : ''}`}
               />
-              {errors.email && (
-                <label className="label">
-                  <span className="label-text-alt text-error">{errors.email}</span>
-                </label>
-              )}
-            </div>
+              <Form.Control.Feedback type="invalid">
+                {errors.email}
+              </Form.Control.Feedback>
+            </Form.Group>
 
-            <div className="form-control">
-              <label className="label">
-                <span className="label-text">Contraseña</span>
-              </label>
-              <input
+            <Form.Group className="mb-3">
+              <Form.Label>Contraseña</Form.Label>
+              <Form.Control
                 type="password"
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
+                isInvalid={!!errors.password}
                 placeholder="Tu contraseña"
-                className={`input input-bordered w-full ${errors.password ? 'input-error' : ''}`}
               />
-              {errors.password && (
-                <label className="label">
-                  <span className="label-text-alt text-error">{errors.password}</span>
-                </label>
-              )}
-            </div>
+              <Form.Control.Feedback type="invalid">
+                {errors.password}
+              </Form.Control.Feedback>
+            </Form.Group>
 
-            <button
-              type="submit"
-              className="btn btn-primary w-full mt-2"
-              disabled={loading}
-            >
+            <Button variant="primary" type="submit" disabled={loading} className="w-100">
               {loading ? (
                 <>
-                  <span className="loading loading-spinner loading-sm me-2"></span>
+                  <Spinner size="sm" animation="border" className="me-2" />
                   Ingresando...
                 </>
               ) : 'Ingresar'}
-            </button>
-          </form>
+            </Button>
+          </Form>
 
-          <p className="mt-4 text-center">
-            ¿No tenés cuenta? <Link to="/register" className="link link-primary">Registrate</Link>
+          <p className="mt-3 text-center">
+            ¿No tenés cuenta? <Link to="/register">Registrate</Link>
           </p>
-        </div>
-      </div>
-    </div>
+        </Col>
+      </Row>
+    </Container>
   );
 };
 

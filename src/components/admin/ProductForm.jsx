@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Form, Button, Row, Col, Spinner } from 'react-bootstrap';
 
 const ProductForm = ({ initialData, onSave, onCancel, loading }) => {
   // Estado del formulario
@@ -68,133 +69,100 @@ const ProductForm = ({ initialData, onSave, onCancel, loading }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-      {/* Título */}
-      <div className="form-control">
-        <label className="label">
-          <span className="label-text">Título <span className="text-error">*</span></span>
-        </label>
-        <input
+    <Form onSubmit={handleSubmit}>
+      <Form.Group className="mb-3">
+        <Form.Label>
+          Título <span className="text-danger">*</span>
+        </Form.Label>
+        <Form.Control
           type="text"
           name="title"
           value={formData.title}
           onChange={handleChange}
+          isInvalid={!!errors.title}
           placeholder="Nombre del producto"
-          className={`input input-bordered w-full ${errors.title ? 'input-error' : ''}`}
         />
-        {errors.title && (
-          <label className="label">
-            <span className="label-text-alt text-error">{errors.title}</span>
-          </label>
-        )}
-      </div>
+        <Form.Control.Feedback type="invalid">{errors.title}</Form.Control.Feedback>
+      </Form.Group>
 
-      {/* Precio y Stock */}
-      <div className="grid gap-4 sm:grid-cols-2">
-        <div className="form-control">
-          <label className="label">
-            <span className="label-text">Precio <span className="text-error">*</span></span>
-          </label>
-          <input
-            type="number"
-            name="price"
-            value={formData.price}
-            onChange={handleChange}
-            placeholder="0.00"
-            step="0.01"
-            min="0"
-            className={`input input-bordered w-full ${errors.price ? 'input-error' : ''}`}
-          />
-          {errors.price && (
-            <label className="label">
-              <span className="label-text-alt text-error">{errors.price}</span>
-            </label>
-          )}
-        </div>
-        <div className="form-control">
-          <label className="label">
-            <span className="label-text">Stock</span>
-          </label>
-          <input
-            type="number"
-            name="stock"
-            value={formData.stock}
-            onChange={handleChange}
-            placeholder="0"
-            min="0"
-            className={`input input-bordered w-full ${errors.stock ? 'input-error' : ''}`}
-          />
-          {errors.stock && (
-            <label className="label">
-              <span className="label-text-alt text-error">{errors.stock}</span>
-            </label>
-          )}
-        </div>
-      </div>
+      <Row>
+        <Col>
+          <Form.Group className="mb-3">
+            <Form.Label>
+              Precio <span className="text-danger">*</span>
+            </Form.Label>
+            <Form.Control
+              type="number"
+              name="price"
+              value={formData.price}
+              onChange={handleChange}
+              isInvalid={!!errors.price}
+              placeholder="0.00"
+              step="0.01"
+              min="0"
+            />
+            <Form.Control.Feedback type="invalid">{errors.price}</Form.Control.Feedback>
+          </Form.Group>
+        </Col>
+        <Col>
+          <Form.Group className="mb-3">
+            <Form.Label>Stock</Form.Label>
+            <Form.Control
+              type="number"
+              name="stock"
+              value={formData.stock}
+              onChange={handleChange}
+              isInvalid={!!errors.stock}
+              placeholder="0"
+              min="0"
+            />
+            <Form.Control.Feedback type="invalid">{errors.stock}</Form.Control.Feedback>
+          </Form.Group>
+        </Col>
+      </Row>
 
-      {/* Descripción */}
-      <div className="form-control">
-        <label className="label">
-          <span className="label-text">Descripción</span>
-        </label>
-        <textarea
+      <Form.Group className="mb-3">
+        <Form.Label>Descripción</Form.Label>
+        <Form.Control
+          as="textarea"
+          rows={3}
           name="description"
           value={formData.description}
           onChange={handleChange}
-          rows={3}
           placeholder="Descripción del producto"
-          className="textarea textarea-bordered w-full"
         />
-      </div>
+      </Form.Group>
 
-      {/* URL de Imagen */}
-      <div className="form-control">
-        <label className="label">
-          <span className="label-text">URL de Imagen</span>
-        </label>
-        <input
+      <Form.Group className="mb-3">
+        <Form.Label>URL de Imagen</Form.Label>
+        <Form.Control
           type="text"
           name="image"
           value={formData.image}
           onChange={handleChange}
           placeholder="https://ejemplo.com/imagen.jpg"
-          className="input input-bordered w-full"
         />
-      </div>
+      </Form.Group>
 
-      {/* Categoría */}
-      <div className="form-control">
-        <label className="label">
-          <span className="label-text">Categoría</span>
-        </label>
-        <input
+      <Form.Group className="mb-3">
+        <Form.Label>Categoría</Form.Label>
+        <Form.Control
           type="text"
           name="category"
           value={formData.category}
           onChange={handleChange}
           placeholder="Ej: Electrónica, Ropa, Hogar"
-          className="input input-bordered w-full"
         />
-      </div>
+      </Form.Group>
 
-      {/* Botones */}
-      <div className="flex justify-end gap-2 mt-4">
-        <button
-          type="button"
-          className="btn btn-ghost"
-          onClick={onCancel}
-          disabled={loading}
-        >
+      <div className="d-flex justify-content-end gap-2">
+        <Button variant="secondary" onClick={onCancel} disabled={loading}>
           Cancelar
-        </button>
-        <button
-          type="submit"
-          className="btn btn-primary"
-          disabled={loading}
-        >
+        </Button>
+        <Button variant="primary" type="submit" disabled={loading}>
           {loading ? (
             <>
-              <span className="loading loading-spinner loading-sm me-2"></span>
+              <Spinner size="sm" animation="border" className="me-2" />
               Guardando...
             </>
           ) : initialData ? (
@@ -202,9 +170,9 @@ const ProductForm = ({ initialData, onSave, onCancel, loading }) => {
           ) : (
             'Crear Producto'
           )}
-        </button>
+        </Button>
       </div>
-    </form>
+    </Form>
   );
 };
 
