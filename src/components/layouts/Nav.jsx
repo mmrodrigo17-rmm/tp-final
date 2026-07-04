@@ -9,13 +9,14 @@ import styles from './Nav.module.css';
 const Nav = ({ searchTerm, setSearchTerm }) => {
   const { cart } = useCart();
   const { user, isAuthenticated, isAdmin, logout } = useAuth();
-  const { theme, toggleTheme } = useTheme();
+  const { theme, effectiveTheme, toggleTheme } = useTheme();
   const totalItems = cart.reduce((acc, item) => acc + item.quantity, 0);
 
-  const themeLabel =
-    theme === 'light' ? 'Modo oscuro' :
-    theme === 'dark' ? 'Modo sistema' :
-    'Modo claro';
+  // Icono a mostrar: siempre el opuesto al tema efectivo actual
+  const isDark = effectiveTheme === 'dark';
+  const themeTooltip = theme === 'system'
+    ? `Sigue al sistema (${isDark ? 'oscuro' : 'claro'}) — click para cambiar`
+    : isDark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro';
 
   return (
     <Navbar
@@ -64,26 +65,41 @@ const Nav = ({ searchTerm, setSearchTerm }) => {
           />
         </div>
 
-        <Button
-          variant="outline-secondary"
-          size="sm"
-          onClick={toggleTheme}
-          className="ms-2"
-          title={themeLabel}
-          aria-label={themeLabel}
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '0.3rem',
-            border: '1px solid var(--border)',
-            color: 'var(--text)',
-            background: 'var(--card-bg)',
-          }}
-        >
-          {theme === 'light' ? <MoonIcon size={16} /> :
-           theme === 'dark' ? <SunIcon size={16} /> :
-           <><SunIcon size={14} /><MoonIcon size={14} /></>}
-        </Button>
+        <div className="d-flex align-items-center gap-1 ms-2">
+          <Button
+            variant="outline-secondary"
+            size="sm"
+            onClick={toggleTheme}
+            title={themeTooltip}
+            aria-label={themeTooltip}
+            className="d-inline-flex align-items-center justify-content-center"
+            style={{
+              width: '36px',
+              height: '36px',
+              padding: 0,
+              border: '1px solid var(--border)',
+              color: 'var(--text)',
+              background: 'var(--card-bg)',
+            }}
+          >
+            {isDark ? <SunIcon size={18} /> : <MoonIcon size={18} />}
+          </Button>
+
+          {theme === 'system' && (
+            <small
+              style={{
+                fontSize: '0.7rem',
+                color: 'var(--text-muted)',
+                cursor: 'pointer',
+                lineHeight: 1,
+              }}
+              title="Seguir sistema — click para fijar manual"
+              onClick={toggleTheme}
+            >
+              Auto
+            </small>
+          )}
+        </div>
 
         <NavBs className="ms-2">
           {isAuthenticated ? (

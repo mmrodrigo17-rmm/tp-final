@@ -4,27 +4,19 @@ const ThemeContext = createContext();
 
 const STORAGE_KEY = 'mi-tienda-theme';
 
-/**
- * Obtiene el tema inicial desde localStorage o 'system' por defecto.
- */
 const getInitialTheme = () => {
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored === 'light' || stored === 'dark') return stored;
+    if (stored === 'light' || stored === 'dark' || stored === 'system') return stored;
   } catch {
-    // localStorage no disponible (entorno de pruebas)
+    // ignorar
   }
   return 'system';
 };
 
-/**
- * Resuelve el tema efectivo: 'system' → prefiere el del sistema.
- */
 const resolveTheme = (theme) => {
   if (theme === 'system') {
-    return window.matchMedia('(prefers-color-scheme: dark)').matches
-      ? 'dark'
-      : 'light';
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
   }
   return theme;
 };
@@ -32,27 +24,26 @@ const resolveTheme = (theme) => {
 export const ThemeProvider = ({ children }) => {
   const [theme, setTheme] = useState(getInitialTheme);
 
-  const applyTheme = (effectiveTheme) => {
-    document.documentElement.setAttribute('data-theme', effectiveTheme);
-  };
+  const effectiveTheme = resolveTheme(theme);
 
-  // Aplica el tema al montar y cuando cambia la preferencia del sistema
   useEffect(() => {
-    const effective = resolveTheme(theme);
-    applyTheme(effective);
+    document.documentElement.setAttribute('data-theme', effectiveTheme);
+  }, [effectiveTheme]);
 
-    // Escucha cambios en la preferencia del sistema (solo si es 'system')
-    if (theme === 'system') {
-      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-      const handler = () => {
-        applyTheme(resolveTheme('system'));
-      };
-      mediaQuery.addEventListener('change', handler);
-      return () => mediaQuery.removeEventListener('change', handler);
-    }
+  useEffect(() => {
+    if (theme !== 'system') return;
+
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    const handler = () => {
+      document.documentElement.setAttribute(
+        'data-theme',
+        mediaQuery.matches ? 'dark' : 'light'
+      );
+    };
+    mediaQuery.addEventListener('change', handler);
+    return () => mediaQuery.removeEventListener('change', handler);
   }, [theme]);
 
-  // Persiste la elección
   useEffect(() => {
     try {
       localStorage.setItem(STORAGE_KEY, theme);
@@ -64,17 +55,18 @@ export const ThemeProvider = ({ children }) => {
   const toggleTheme = () => {
     setTheme((prev) => {
       if (prev === 'light') return 'dark';
-      if (prev === 'dark') return 'system';
-      return 'light';
+      if (prev === 'dark') return 'light';
+      // 'system' → usa el opuesto del tema efectivo actual
+      return effectiveTheme === 'dark' ? 'light' : 'dark';
     });
   };
 
-  const effectiveTheme = resolveTheme(theme);
-
-  const iconTheme = effectiveTheme === 'dark' ? 'light' : 'dark';
+  const resetToSystem = () => {
+    setTheme('system');
+  };
 
   return (
-    <ThemeContext.Provider value={{ theme, effectiveTheme, toggleTheme, iconTheme }}>
+    <ThemeContext.Provider value={{ theme, effectiveTheme, toggleTheme, resetToSystem }}>
       {children}
     </ThemeContext.Provider>
   );
@@ -82,8 +74,6 @@ export const ThemeProvider = ({ children }) => {
 
 export const useTheme = () => {
   const context = useContext(ThemeContext);
-  if (!context) {
-    throw new Error('useTheme debe usarse dentro de un ThemeProvider');
-  }
+  if (!context) throw new Error('useTheme debe usarse dentro de un ThemeProvider');
   return context;
 };
