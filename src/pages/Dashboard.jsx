@@ -189,7 +189,8 @@ const Dashboard = () => {
                       <Button
                         variant="warning"
                         size="sm"
-                        className="me-2 d-inline-flex align-items-center"
+                        className="me-2 d-inline-flex align-items-center justify-content-center"
+                        style={{ minWidth: '85px' }}
                         onClick={() => handleEdit(product)}
                       >
                         <FaPenToSquare className="me-1" />Editar
@@ -197,7 +198,8 @@ const Dashboard = () => {
                       <Button
                         variant="danger"
                         size="sm"
-                        className="d-inline-flex align-items-center"
+                        className="d-inline-flex align-items-center justify-content-center"
+                        style={{ minWidth: '85px' }}
                         onClick={() => handleDeleteClick(product)}
                       >
                         <FaTrashCan className="me-1" />Eliminar
