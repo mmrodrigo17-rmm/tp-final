@@ -17,6 +17,7 @@ const ItemListContainer = () => {
     paginaActual,
     totalPaginas,
     cargarPagina,
+    error,
   } = usePaginacion('productos', 'title', 8);
 
   // Filtro por búsqueda (del lado del cliente porque el search es local)
@@ -25,6 +26,17 @@ const ItemListContainer = () => {
         p.title?.toLowerCase().includes(searchTerm.toLowerCase())
       )
     : productos;
+
+  if (error) {
+    return (
+      <div className={estilos.catalogContainer}>
+        <Helmet>
+          <title>Mi Tienda — {pageTitle}</title>
+        </Helmet>
+        <Alert variant="danger">Error al cargar los productos. Verificá la conexión con Firebase.</Alert>
+      </div>
+    );
+  }
 
   if (cargando && productos.length === 0) {
     return (

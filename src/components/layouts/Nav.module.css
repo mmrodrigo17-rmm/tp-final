@@ -9,7 +9,7 @@
 .searchIcon {
   position: absolute;
   left: 12px;
-  color: #888;
+  color: var(--text-muted);
   font-size: 0.9rem;
   pointer-events: none;
 }
@@ -17,25 +17,27 @@
 /* Input de búsqueda con padding izquierdo para no pisar el icono */
 .searchInput {
   padding: 0.4rem 0.8rem 0.4rem 2rem;
-  border: 1px solid #ccc;
+  border: 1px solid var(--border);
   border-radius: 6px;
   font-size: 0.9rem;
   outline: none;
   width: 200px;
+  background: var(--card-bg);
+  color: var(--text);
   transition: width 0.2s ease, border-color 0.2s ease;
 }
 
 .searchInput:focus {
   width: 250px;
-  border-color: #007bff;
+  border-color: var(--accent);
 }
 
-/* Badge del carrito: burbuja roja con la cantidad de artículos */
+/* Badge del carrito: burbuja con la cantidad de artículos */
 .badge {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background-color: #dc3545;
+  background-color: var(--danger);
   color: #fff;
   font-size: 0.7rem;
   font-weight: bold;

@@ -4,7 +4,7 @@ import { CartIcon, SearchIcon, SunIcon, MoonIcon } from '../../assets/icons';
 import { useCart } from '../../context/CartContext';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
-import styles from './Nav.module.css';
+import estilos from './Nav.module.css';
 
 const Nav = ({ searchTerm, setSearchTerm }) => {
   const { cart } = useCart();
@@ -46,7 +46,7 @@ const Nav = ({ searchTerm, setSearchTerm }) => {
             <CartIcon size={18} className="me-1" />
             Carrito
             {totalItems > 0 && (
-              <span className={styles.badge}>{totalItems}</span>
+              <span className={estilos.badge}>{totalItems}</span>
             )}
           </NavBs.Link>
 
@@ -57,14 +57,14 @@ const Nav = ({ searchTerm, setSearchTerm }) => {
           )}
         </NavBs>
 
-        <div className={styles.searchWrapper}>
-          <SearchIcon size={16} className={styles.searchIcon} />
+        <div className={estilos.searchWrapper}>
+          <SearchIcon size={16} className={estilos.searchIcon} />
           <input
             type="text"
             placeholder="Buscar productos..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className={styles.searchInput}
+            className={estilos.searchInput}
           />
         </div>
 

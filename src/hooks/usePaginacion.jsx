@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect } from 'react';
 import {
   collection,
   query,
@@ -7,20 +7,20 @@ import {
   getDocs,
   startAfter,
   getCountFromServer,
-} from "firebase/firestore";
-import { db } from "../firebase/config";
+} from 'firebase/firestore';
+import { db } from '../firebase/config';
 
 /**
  * Hook de paginación cursor-based con Firestore.
  *
  * @param {string} nombreColeccion - Nombre de la colección en Firestore
- * @param {string} campoOrden - Campo por el cual ordenar (default: "title")
+ * @param {string} campoOrden - Campo por el cual ordenar (default: 'title')
  * @param {number} itemsPorPagina - Items por página (default: 8)
- * @returns {{ data, cargando, paginaActual, totalPaginas, cargarPagina, refrescarPagina }}
+ * @returns {{ data, cargando, paginaActual, totalPaginas, cargarPagina, refrescarPagina, error }}
  */
 export const usePaginacion = (
-  nombreColeccion = "productos",
-  campoOrden = "title",
+  nombreColeccion = 'productos',
+  campoOrden = 'title',
   itemsPorPagina = 8
 ) => {
   const [data, setData] = useState([]);
@@ -28,14 +28,15 @@ export const usePaginacion = (
   const [historialDocs, setHistorialDocs] = useState([null]);
   const [totalPaginas, setTotalPaginas] = useState(0);
   const [cargando, setCargando] = useState(false);
+  const [error, setError] = useState(null);
 
   // Obtiene el total de documentos para calcular la cantidad de páginas
   const obtenerTotal = async () => {
     try {
       const snapshot = await getCountFromServer(collection(db, nombreColeccion));
       setTotalPaginas(Math.ceil(snapshot.data().count / itemsPorPagina));
-    } catch (error) {
-      console.error("Error al obtener total:", error);
+    } catch {
+      setError('Error al cargar los datos.');
     }
   };
 
@@ -75,6 +76,7 @@ export const usePaginacion = (
       }));
 
       setData(items);
+      setError(null);
       setPaginaActual(numeroPagina);
 
       // Guarda el último documento como referencia para la siguiente página
@@ -84,8 +86,8 @@ export const usePaginacion = (
         nuevoHistorial[numeroPagina] = ultimoDocumento;
         setHistorialDocs(nuevoHistorial);
       }
-    } catch (error) {
-      console.error("Error al cargar página:", error);
+    } catch {
+      setError('Error al cargar los datos.');
     } finally {
       setCargando(false);
     }
@@ -113,5 +115,6 @@ export const usePaginacion = (
     totalPaginas,
     cargarPagina,
     refrescarPagina,
+    error,
   };
 };

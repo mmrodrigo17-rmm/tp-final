@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Form, Button, Alert } from 'react-bootstrap';
+import estilos from './Contacto.module.css';
 
 const Contacto = () => {
   const [formData, setFormData] = useState({
@@ -45,7 +46,7 @@ const Contacto = () => {
   };
 
   return (
-    <div style={{ maxWidth: 600, margin: '0 auto', padding: '1rem' }}>
+    <div className={estilos.container}>
       <Helmet>
         <title>Contacto — Mi Tienda</title>
         <meta
@@ -54,8 +55,8 @@ const Contacto = () => {
         />
       </Helmet>
 
-      <h2 style={{ color: 'var(--heading)' }}>Contacto</h2>
-      <p style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem' }}>
+      <h2 className={estilos.heading}>Contacto</h2>
+      <p className={estilos.subtitle}>
         Dejanos tu mensaje y te respondemos a la brevedad.
       </p>
 
