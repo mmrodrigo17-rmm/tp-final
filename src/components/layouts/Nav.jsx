@@ -21,6 +21,9 @@ const Nav = ({ searchTerm, setSearchTerm }) => {
           <NavBs.Link as={NavLink} to="/productos">
             Productos
           </NavBs.Link>
+          <NavBs.Link as={NavLink} to="/contacto">
+            Contacto
+          </NavBs.Link>
           <NavBs.Link as={NavLink} to="/carrito">
             <FaCartShopping className="me-1" />
             Carrito
