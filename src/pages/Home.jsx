@@ -26,6 +26,7 @@ const CarouselWrapper = styled.div`
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  background: #f0f0f0;
 
   .carousel,
   .carousel-inner,
@@ -41,7 +42,8 @@ const CarouselWrapper = styled.div`
 const SlideImage = styled.img`
   width: 100%;
   height: 400px;
-  object-fit: cover;
+  object-fit: contain;
+  background: #f0f0f0;
 
   @media (max-width: 768px) {
     height: 250px;
