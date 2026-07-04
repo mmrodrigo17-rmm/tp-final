@@ -1,62 +1,34 @@
-import { useState, useEffect, useMemo } from 'react';
-import { useOutletContext, useLocation } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
-import { collection, getDocs } from 'firebase/firestore';
-import { db } from '../../firebase/config';
+import { useOutletContext, useLocation } from 'react-router-dom';
 import { Spinner, Alert } from 'react-bootstrap';
-import Item from './Item';
-
-const ITEMS_PER_PAGE = 8;
+import { usePaginacion } from '../../hooks/usePaginacion';
+import ItemList from './ItemList';
+import Paginacion from '../Paginacion';
+import estilos from './ItemListContainer.module.css';
 
 const ItemListContainer = () => {
   const { searchTerm } = useOutletContext();
   const location = useLocation();
   const pageTitle = location.pathname === '/' ? 'Inicio' : 'Productos';
 
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [currentPage, setCurrentPage] = useState(1);
+  const {
+    data: productos,
+    cargando,
+    paginaActual,
+    totalPaginas,
+    cargarPagina,
+  } = usePaginacion('productos', 'title', 8);
 
-  useEffect(() => {
-    const fetchProducts = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const querySnapshot = await getDocs(collection(db, 'productos'));
-        const productsData = querySnapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        }));
-        setProducts(productsData);
-      } catch (err) {
-        setError('Error al cargar productos. Intente nuevamente.');
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchProducts();
-  }, []);
+  // Filtro por búsqueda (del lado del cliente porque el search es local)
+  const productosFiltrados = searchTerm
+    ? productos.filter((p) =>
+        p.title?.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+    : productos;
 
-  // Vuelve a página 1 cuando cambia el término de búsqueda
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchTerm]);
-
-  const filteredProducts = useMemo(
-    () => products.filter(product =>
-      product.title?.toLowerCase().includes(searchTerm.toLowerCase())
-    ),
-    [products, searchTerm]
-  );
-
-  const totalPages = Math.ceil(filteredProducts.length / ITEMS_PER_PAGE);
-  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const paginatedProducts = filteredProducts.slice(startIndex, startIndex + ITEMS_PER_PAGE);
-
-  if (loading) {
+  if (cargando && productos.length === 0) {
     return (
-      <div style={{ textAlign: 'center', padding: '3rem' }}>
+      <div className={estilos.loadingContainer}>
         <Spinner animation="border" role="status">
           <span className="visually-hidden">Cargando productos...</span>
         </Spinner>
@@ -64,66 +36,32 @@ const ItemListContainer = () => {
     );
   }
 
-  if (error) {
-    return <Alert variant="danger">{error}</Alert>;
-  }
-
   return (
-    <div>
+    <div className={estilos.catalogContainer}>
       <Helmet>
         <title>Mi Tienda — {pageTitle}</title>
-        <meta name="description" content="Los mejores productos en Mi Tienda Monumental" />
+        <meta
+          name="description"
+          content="Los mejores productos en Mi Tienda Monumental"
+        />
       </Helmet>
-      {filteredProducts.length === 0 ? (
-        <Alert variant="info">No se encontraron productos.</Alert>
+
+      {productosFiltrados.length === 0 ? (
+        <div className={estilos.noResults}>
+          <Alert variant="info">No se encontraron productos.</Alert>
+        </div>
       ) : (
         <>
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-            gap: '1rem'
-          }}>
-            {paginatedProducts.map(product => (
-              <Item key={product.id} product={product} />
-            ))}
-          </div>
+          <ItemList productos={productosFiltrados} />
 
-          {totalPages > 1 && (
-            <div style={{ textAlign: 'center', marginTop: '2rem' }}>
-              <button
-                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                disabled={currentPage === 1}
-                style={{
-                  padding: '0.5rem 1.2rem',
-                  marginRight: '0.5rem',
-                  cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
-                  border: '1px solid #ccc',
-                  borderRadius: '4px',
-                  background: currentPage === 1 ? '#f0f0f0' : '#fff'
-                }}
-              >
-                Anterior
-              </button>
-
-              <span style={{ margin: '0 1rem', fontWeight: 'bold' }}>
-                Página {currentPage} de {totalPages}
-              </span>
-
-              <button
-                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                disabled={currentPage === totalPages}
-                style={{
-                  padding: '0.5rem 1.2rem',
-                  marginLeft: '0.5rem',
-                  cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
-                  border: '1px solid #ccc',
-                  borderRadius: '4px',
-                  background: currentPage === totalPages ? '#f0f0f0' : '#fff'
-                }}
-              >
-                Siguiente
-              </button>
-            </div>
+          {/* Paginación — solo se muestra si no hay búsqueda activa */}
+          {!searchTerm && (
+            <Paginacion
+              paginaActual={paginaActual}
+              totalPaginas={totalPaginas}
+              cargarPagina={cargarPagina}
+              cargando={cargando}
+            />
           )}
         </>
       )}

@@ -1,0 +1,32 @@
+.container {
+  max-width: 400px;
+  margin: 2rem auto;
+}
+
+.card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 2rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.title {
+  color: var(--heading);
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.footer {
+  text-align: center;
+  margin-top: 1rem;
+  color: var(--text-secondary);
+}
+
+.footer a {
+  color: var(--accent);
+}
+
+.errorAlert {
+  margin-bottom: 1rem;
+}

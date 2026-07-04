@@ -1,4 +1,3 @@
-import styled from 'styled-components';
 import { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
@@ -6,6 +5,7 @@ import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../firebase/config';
 import { Carousel, Spinner } from 'react-bootstrap';
 import ItemListContainer from '../components/products/ItemListContainer';
+import estilos from './Home.module.css';
 
 // --- Helpers ---
 
@@ -17,105 +17,6 @@ const shuffle = (array) => {
   }
   return arr;
 };
-
-// --- Styled Components ---
-
-const CarouselWrapper = styled.div`
-  max-width: 900px;
-  margin: 0 auto 2rem;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  background: #f0f0f0;
-
-  .carousel,
-  .carousel-inner,
-  .carousel-item {
-    height: 400px;
-
-    @media (max-width: 768px) {
-      height: 250px;
-    }
-  }
-`;
-
-const SlideImage = styled.img`
-  width: 100%;
-  height: 400px;
-  object-fit: contain;
-  background: #f0f0f0;
-
-  @media (max-width: 768px) {
-    height: 250px;
-  }
-`;
-
-const CaptionGradient = styled.div`
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 50%;
-  background: linear-gradient(transparent, rgba(0, 0, 0, 0.75));
-  pointer-events: none;
-`;
-
-const StyledCaption = styled(Carousel.Caption)`
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  padding: 2rem 1rem 1.5rem;
-  text-align: left;
-  z-index: 1;
-
-  h3 {
-    font-size: 1.4rem;
-    font-weight: 700;
-    margin: 0;
-    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
-
-    @media (max-width: 768px) {
-      font-size: 1rem;
-    }
-  }
-
-  p {
-    font-size: 1.2rem;
-    margin: 0.25rem 0 0;
-    font-weight: 600;
-    color: #ffc107;
-
-    @media (max-width: 768px) {
-      font-size: 1rem;
-    }
-  }
-`;
-
-const ImagePlaceholder = styled.div`
-  width: 100%;
-  height: 400px;
-  background: #ddd;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #888;
-  font-size: 1.2rem;
-
-  @media (max-width: 768px) {
-    height: 250px;
-  }
-`;
-
-const SlideLink = styled(Link)`
-  display: block;
-  text-decoration: none;
-  color: inherit;
-
-  &:hover {
-    cursor: pointer;
-  }
-`;
 
 // --- Component ---
 
@@ -152,7 +53,7 @@ const Home = () => {
       </Helmet>
 
       {loading && (
-        <div style={{ textAlign: 'center', padding: '3rem' }}>
+        <div className={estilos.loadingContainer}>
           <Spinner animation="border" role="status">
             <span className="visually-hidden">Cargando...</span>
           </Spinner>
@@ -160,26 +61,37 @@ const Home = () => {
       )}
 
       {!error && !loading && products.length > 0 && (
-        <CarouselWrapper>
+        <div className={estilos.carouselWrapper}>
           <Carousel>
             {products.map((product) => (
               <Carousel.Item key={product.id}>
-                <SlideLink to={`/producto/${product.id}`}>
-                  {product.image ? (
-                    <SlideImage src={product.image} alt={product.title || ''} />
-                  ) : (
-                    <ImagePlaceholder>Sin imagen</ImagePlaceholder>
-                  )}
-                  <CaptionGradient />
-                  <StyledCaption>
-                    <h3>{product.title || ''}</h3>
-                    <p>${product.price ?? ''}</p>
-                  </StyledCaption>
-                </SlideLink>
+                <Link
+                  to={`/producto/${product.id}`}
+                  className={estilos.slideLink}
+                >
+                  <div className={estilos.carouselInner}>
+                    {product.image ? (
+                      <img
+                        src={product.image}
+                        alt={product.title || ''}
+                        className={estilos.slideImage}
+                      />
+                    ) : (
+                      <div className={estilos.imagePlaceholder}>
+                        Sin imagen
+                      </div>
+                    )}
+                    <div className={estilos.captionGradient} />
+                    <Carousel.Caption className={estilos.caption}>
+                      <h3>{product.title || ''}</h3>
+                      <p>${product.price ?? ''}</p>
+                    </Carousel.Caption>
+                  </div>
+                </Link>
               </Carousel.Item>
             ))}
           </Carousel>
-        </CarouselWrapper>
+        </div>
       )}
 
       <ItemListContainer />

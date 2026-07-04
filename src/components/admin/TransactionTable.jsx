@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Table, Spinner, Alert, Form, Row, Col, Button } from 'react-bootstrap';
-import { FaDownload } from 'react-icons/fa6';
+import { DownloadIcon } from '../../assets/icons';
 import { collection, getDocs, query, orderBy } from 'firebase/firestore';
 import { db } from '../../firebase/config';
 
@@ -178,7 +178,7 @@ const TransactionTable = () => {
       {filteredTransactions.length > 0 && (
         <div className="text-end mb-2">
           <Button variant="success" size="sm" onClick={exportCSV}>
-            <FaDownload className="me-1" />Exportar CSV
+            <DownloadIcon size={16} className="me-1" />Exportar CSV
           </Button>
         </div>
       )}

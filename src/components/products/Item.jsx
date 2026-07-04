@@ -1,13 +1,24 @@
 import { Link } from 'react-router-dom';
+import estilos from './Item.module.css';
 
 const Item = ({ product }) => {
   return (
-    <div style={{ border: '1px solid #ddd', padding: '1rem', borderRadius: '8px', textAlign: 'center' }}>
-      <img src={product.image} alt={product.title} style={{ height: '150px', objectFit: 'contain' }} />
-      <h3 style={{ fontSize: '1.1rem', margin: '10px 0' }}>{product.title.substring(0, 30)}...</h3>
-      <p>${product.price}</p>
+    <div className={estilos.card}>
       <Link to={`/producto/${product.id}`}>
-        <button style={{ padding: '10px', cursor: 'pointer' }}>Ver Detalle</button>
+        <img
+          src={product.image}
+          alt={product.title}
+          className={estilos.image}
+        />
+      </Link>
+      <Link to={`/producto/${product.id}`} style={{ textDecoration: 'none' }}>
+        <h3 className={estilos.title}>
+          {product.title?.substring(0, 30)}...
+        </h3>
+      </Link>
+      <p className={estilos.price}>${product.price}</p>
+      <Link to={`/producto/${product.id}`}>
+        <button className={estilos.btnDetail}>Ver Detalle</button>
       </Link>
     </div>
   );

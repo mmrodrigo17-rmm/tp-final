@@ -1,26 +1,38 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
-import { doc, getDoc } from 'firebase/firestore';
+import {
+  collection,
+  query,
+  where,
+  onSnapshot,
+  doc,
+  getDoc,
+} from 'firebase/firestore';
 import { db } from '../../firebase/config';
 import { Spinner, Alert } from 'react-bootstrap';
-import { FaCartPlus, FaArrowLeft } from 'react-icons/fa6';
+import { ArrowLeftIcon, CartIcon } from '../../assets/icons';
 import { useCart } from '../../context/CartContext';
+import estilos from './ItemDetailContainer.module.css';
 
 const ItemDetailContainer = () => {
   const { id } = useParams();
-  
+
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const { addToCart } = useCart();
   const [addedFeedback, setAddedFeedback] = useState(false);
 
+  // Opiniones en tiempo real con onSnapshot
+  const [opiniones, setOpiniones] = useState([]);
+  const [cargandoOpiniones, setCargandoOpiniones] = useState(true);
+
   // Cleanup del timeout de feedback al desmontar
   useEffect(() => {
     if (!addedFeedback) return;
-    const id = setTimeout(() => setAddedFeedback(false), 1500);
-    return () => clearTimeout(id);
+    const timeoutId = setTimeout(() => setAddedFeedback(false), 1500);
+    return () => clearTimeout(timeoutId);
   }, [addedFeedback]);
 
   // Carga el producto desde Firestore según el id de la URL
@@ -29,16 +41,16 @@ const ItemDetailContainer = () => {
       setLoading(true);
       setError(null);
       setProduct(null);
-      
+
       try {
         const docSnap = await getDoc(doc(db, 'productos', id));
-        
+
         if (docSnap.exists()) {
           setProduct({ id: docSnap.id, ...docSnap.data() });
         } else {
           setProduct(null);
         }
-      } catch (err) {
+      } catch {
         setError('Error al cargar el producto.');
       } finally {
         setLoading(false);
@@ -48,11 +60,34 @@ const ItemDetailContainer = () => {
     fetchProduct();
   }, [id]);
 
+  // Opiniones en tiempo real con onSnapshot
+  useEffect(() => {
+    const q = query(collection(db, 'opiniones'), where('productoId', '==', id));
+
+    const unsubscribe = onSnapshot(
+      q,
+      (snapshot) => {
+        const opinionesData = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        setOpiniones(opinionesData);
+        setCargandoOpiniones(false);
+      },
+      () => {
+        // Si la colección 'opiniones' no existe, no hay opiniones
+        setCargandoOpiniones(false);
+      }
+    );
+
+    return unsubscribe;
+  }, [id]);
+
   if (loading) {
     return (
-      <div style={{ textAlign: 'center', padding: '3rem' }}>
+      <div className={estilos.loadingContainer}>
         <Spinner animation="border" role="status">
-          <span className="visually-hidden">Cargando detalle del producto...</span>
+          <span className="visually-hidden">Cargando detalle...</span>
         </Spinner>
       </div>
     );
@@ -63,7 +98,10 @@ const ItemDetailContainer = () => {
       <Alert variant="danger">
         {error}
         <div style={{ marginTop: '1rem' }}>
-          <Link to="/productos"><FaArrowLeft className="me-1" />Volver al catálogo</Link>
+          <Link to="/productos" className={estilos.backLink}>
+            <ArrowLeftIcon size={16} />
+            Volver al catálogo
+          </Link>
         </div>
       </Alert>
     );
@@ -71,11 +109,12 @@ const ItemDetailContainer = () => {
 
   if (!product) {
     return (
-      <div style={{ textAlign: 'center', padding: '2rem' }}>
+      <div className={estilos.notFound}>
         <h2>Producto no encontrado</h2>
-        <p style={{ marginTop: '1rem' }}>
-          <Link to="/productos"><FaArrowLeft className="me-1" />Volver al catálogo</Link>
-        </p>
+        <Link to="/productos" className={estilos.notFoundLink}>
+          <ArrowLeftIcon size={16} />
+          Volver al catálogo
+        </Link>
       </div>
     );
   }
@@ -88,69 +127,103 @@ const ItemDetailContainer = () => {
     ? product.description.substring(0, 160)
     : 'Detalle del producto en Mi Tienda Monumental';
 
+  const handleAddToCart = () => {
+    addToCart(product, 1);
+    setAddedFeedback(true);
+  };
+
   return (
-    <div>
+    <div className={estilos.container}>
       <Helmet>
         <title>{product.title} — Mi Tienda</title>
         <meta name="description" content={metaDescription} />
       </Helmet>
-    <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap' }}>
-      
-      <img
-        src={product.image}
-        alt={product.title}
-        style={{ width: '300px', maxWidth: '100%', objectFit: 'contain' }}
-      />
-      
-      <div style={{ flex: 1, minWidth: '250px' }}>
-        <h2>{product.title}</h2>
-        <p style={{ color: '#555', lineHeight: 1.6 }}>{product.description}</p>
-        <h3 style={{ color: '#2c7be5' }}>${product.price}</h3>
-        
-        {product.category && (
-          <p style={{ marginTop: '0.5rem' }}>
-            <strong>Categoría:</strong> {product.category}
-          </p>
-        )}
-        
-        <p style={{ marginTop: '0.5rem' }}>
-          <strong>Stock:</strong>{' '}
-          {isOutOfStock ? (
-            <span style={{ color: 'red', fontWeight: 'bold' }}>Sin stock</span>
-          ) : isLowStock ? (
-            <span style={{ color: '#e67e22', fontWeight: 'bold' }}>
-              {stock} unidades (bajo stock)
-            </span>
-          ) : (
-            <span>{stock} unidades</span>
+
+      <Link to="/productos" className={estilos.backLink}>
+        <ArrowLeftIcon size={16} />
+        Volver al catálogo
+      </Link>
+
+      <div className={estilos.layout}>
+        <div className={estilos.imageWrapper}>
+          <img
+            src={product.image}
+            alt={product.title}
+            className={estilos.productImage}
+          />
+        </div>
+
+        <div className={estilos.infoWrapper}>
+          <h2 className={estilos.productTitle}>{product.title}</h2>
+
+          <p className={estilos.description}>{product.description}</p>
+
+          <p className={estilos.price}>${product.price}</p>
+
+          {product.category && (
+            <p className={estilos.category}>
+              <strong>Categoría:</strong> {product.category}
+            </p>
           )}
-        </p>
-        
-        <button
-          onClick={() => {
-            addToCart(product, 1);
-            setAddedFeedback(true);
-          }}
-          disabled={isOutOfStock}
-          style={{
-            padding: '10px 20px',
-            background: isOutOfStock ? '#ccc' : 'blue',
-            color: 'white',
-            cursor: isOutOfStock ? 'not-allowed' : 'pointer',
-            border: 'none',
-            borderRadius: '4px',
-            marginTop: '10px',
-            fontSize: '1rem',
-            display: 'inline-flex',
-            alignItems: 'center',
-            whiteSpace: 'nowrap'
-          }}
-        >
-          {isOutOfStock ? 'Sin stock' : addedFeedback ? '✓ Agregado' : <><FaCartPlus className="me-2" />Agregar al Carrito</>}
-        </button>
+
+          <p className={estilos.stock}>
+            <strong>Stock:</strong>{' '}
+            {isOutOfStock ? (
+              <span className={estilos.stockOut}>Sin stock</span>
+            ) : isLowStock ? (
+              <span className={estilos.stockLow}>
+                {stock} unidades (bajo stock)
+              </span>
+            ) : (
+              <span className={estilos.stockOk}>{stock} unidades</span>
+            )}
+          </p>
+
+          <button
+            onClick={handleAddToCart}
+            disabled={isOutOfStock}
+            className={`${estilos.btnAddCart} ${addedFeedback ? estilos.btnAddCartAdded : ''}`}
+          >
+            {isOutOfStock ? (
+              'Sin stock'
+            ) : addedFeedback ? (
+              '✓ Agregado'
+            ) : (
+              <>
+                <CartIcon size={18} />
+                Agregar al Carrito
+              </>
+            )}
+          </button>
+        </div>
       </div>
-      
-    </div>
+
+      {/* Opiniones en tiempo real */}
+      <section className={estilos.opinionesSection}>
+        <h3 className={estilos.opinionesTitle}>Opiniones de la comunidad</h3>
+
+        {cargandoOpiniones ? (
+          <p className={estilos.opinionesLoading}>Cargando opiniones...</p>
+        ) : opiniones.length === 0 ? (
+          <p className={estilos.opinionesEmpty}>
+            Aún no hay reseñas para este producto.
+          </p>
+        ) : (
+          opiniones.map((op) => (
+            <div key={op.id} className={estilos.opinionCard}>
+              <strong className={estilos.opinionAuthor}>
+                {op.clienteNombre || 'Anónimo'}
+              </strong>
+              <p className={estilos.opinionText}>{op.comentario}</p>
+              {op.rating && (
+                <span className={estilos.opinionRating}>
+                  {op.rating} ★
+                </span>
+              )}
+            </div>
+          ))
+        )}
+      </section>
     </div>
   );
 };

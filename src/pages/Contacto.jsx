@@ -1,127 +1,139 @@
 import { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { Container, Row, Col, Form, Button, Alert } from 'react-bootstrap';
-
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+import { Form, Button, Alert } from 'react-bootstrap';
 
 const Contacto = () => {
-  const [nombre, setNombre] = useState('');
-  const [email, setEmail] = useState('');
-  const [asunto, setAsunto] = useState('');
-  const [mensaje, setMensaje] = useState('');
+  const [formData, setFormData] = useState({
+    nombre: '',
+    email: '',
+    asunto: '',
+    mensaje: '',
+  });
   const [errors, setErrors] = useState({});
-  const [showSuccess, setShowSuccess] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
+  const [enviado, setEnviado] = useState(false);
 
   const validate = () => {
     const newErrors = {};
-    if (!nombre.trim()) newErrors.nombre = 'El nombre es obligatorio.';
-    if (!email.trim()) newErrors.email = 'El email es obligatorio.';
-    else if (!EMAIL_REGEX.test(email)) newErrors.email = 'Formato de email inválido.';
-    if (!mensaje.trim()) newErrors.mensaje = 'El mensaje es obligatorio.';
+    if (!formData.nombre.trim()) {
+      newErrors.nombre = 'El nombre es obligatorio';
+    }
+    if (!formData.email.trim()) {
+      newErrors.email = 'El email es obligatorio';
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      newErrors.email = 'Formato de email inválido';
+    }
+    if (!formData.mensaje.trim()) {
+      newErrors.mensaje = 'El mensaje es obligatorio';
+    }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const resetForm = () => {
-    setNombre('');
-    setEmail('');
-    setAsunto('');
-    setMensaje('');
-    setErrors({});
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    if (errors[name]) {
+      setErrors((prev) => ({ ...prev, [name]: '' }));
+    }
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!validate()) return;
-
-    setSubmitting(true);
-    setTimeout(() => {
-      console.log({ nombre, email, asunto, mensaje });
-      setShowSuccess(true);
-      resetForm();
-      setSubmitting(false);
-    }, 300);
+    setEnviado(true);
+    setFormData({ nombre: '', email: '', asunto: '', mensaje: '' });
   };
 
   return (
-    <Container className="py-4">
+    <div style={{ maxWidth: 600, margin: '0 auto', padding: '1rem' }}>
       <Helmet>
-        <title>Mi Tienda — Contacto</title>
+        <title>Contacto — Mi Tienda</title>
+        <meta
+          name="description"
+          content="Comunicate con Mi Tienda Monumental"
+        />
       </Helmet>
 
-      <Row className="justify-content-center">
-        <Col md={6}>
-          <h2>Contacto</h2>
-          <p className="text-muted">Completá el formulario y te responderemos a la brevedad.</p>
+      <h2 style={{ color: 'var(--heading)' }}>Contacto</h2>
+      <p style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem' }}>
+        Dejanos tu mensaje y te respondemos a la brevedad.
+      </p>
 
-          {showSuccess && (
-            <Alert
-              variant="success"
-              dismissible
-              onClose={() => setShowSuccess(false)}
-            >
-              Mensaje enviado con éxito
-            </Alert>
-          )}
+      {enviado && (
+        <Alert variant="success" dismissible onClose={() => setEnviado(false)}>
+          ¡Mensaje enviado con éxito! Te vamos a responder pronto.
+        </Alert>
+      )}
 
-          <Form noValidate onSubmit={handleSubmit}>
-            <Form.Group className="mb-3" controlId="nombre">
-              <Form.Label>Nombre</Form.Label>
-              <Form.Control
-                type="text"
-                value={nombre}
-                isInvalid={!!errors.nombre}
-                onChange={(e) => setNombre(e.target.value)}
-              />
-              <Form.Control.Feedback type="invalid">
-                {errors.nombre}
-              </Form.Control.Feedback>
-            </Form.Group>
+      <Form onSubmit={handleSubmit}>
+        <Form.Group className="mb-3">
+          <Form.Label>
+            Nombre <span className="text-danger">*</span>
+          </Form.Label>
+          <Form.Control
+            type="text"
+            name="nombre"
+            value={formData.nombre}
+            onChange={handleChange}
+            isInvalid={!!errors.nombre}
+            placeholder="Tu nombre"
+          />
+          <Form.Control.Feedback type="invalid">
+            {errors.nombre}
+          </Form.Control.Feedback>
+        </Form.Group>
 
-            <Form.Group className="mb-3" controlId="email">
-              <Form.Label>Email</Form.Label>
-              <Form.Control
-                type="email"
-                value={email}
-                isInvalid={!!errors.email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-              <Form.Control.Feedback type="invalid">
-                {errors.email}
-              </Form.Control.Feedback>
-            </Form.Group>
+        <Form.Group className="mb-3">
+          <Form.Label>
+            Email <span className="text-danger">*</span>
+          </Form.Label>
+          <Form.Control
+            type="email"
+            name="email"
+            value={formData.email}
+            onChange={handleChange}
+            isInvalid={!!errors.email}
+            placeholder="tu@email.com"
+          />
+          <Form.Control.Feedback type="invalid">
+            {errors.email}
+          </Form.Control.Feedback>
+        </Form.Group>
 
-            <Form.Group className="mb-3" controlId="asunto">
-              <Form.Label>Asunto <span className="text-muted">(opcional)</span></Form.Label>
-              <Form.Control
-                type="text"
-                value={asunto}
-                onChange={(e) => setAsunto(e.target.value)}
-              />
-            </Form.Group>
+        <Form.Group className="mb-3">
+          <Form.Label>Asunto <span className="text-muted">(opcional)</span></Form.Label>
+          <Form.Control
+            type="text"
+            name="asunto"
+            value={formData.asunto}
+            onChange={handleChange}
+            placeholder="¿Sobre qué querés hablar?"
+          />
+        </Form.Group>
 
-            <Form.Group className="mb-3" controlId="mensaje">
-              <Form.Label>Mensaje</Form.Label>
-              <Form.Control
-                as="textarea"
-                rows={4}
-                value={mensaje}
-                isInvalid={!!errors.mensaje}
-                onChange={(e) => setMensaje(e.target.value)}
-              />
-              <Form.Control.Feedback type="invalid">
-                {errors.mensaje}
-              </Form.Control.Feedback>
-            </Form.Group>
+        <Form.Group className="mb-3">
+          <Form.Label>
+            Mensaje <span className="text-danger">*</span>
+          </Form.Label>
+          <Form.Control
+            as="textarea"
+            rows={4}
+            name="mensaje"
+            value={formData.mensaje}
+            onChange={handleChange}
+            isInvalid={!!errors.mensaje}
+            placeholder="Escribí tu mensaje acá..."
+          />
+          <Form.Control.Feedback type="invalid">
+            {errors.mensaje}
+          </Form.Control.Feedback>
+        </Form.Group>
 
-            <Button variant="primary" type="submit" disabled={submitting}>
-              {submitting ? 'Enviando...' : 'Enviar'}
-            </Button>
-          </Form>
-        </Col>
-      </Row>
-    </Container>
+        <Button variant="primary" type="submit">
+          Enviar Mensaje
+        </Button>
+      </Form>
+    </div>
   );
 };
 

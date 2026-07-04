@@ -1,0 +1,207 @@
+/* === Contenedor detalle === */
+.container {
+  padding: 1rem 0;
+}
+
+.backLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  color: var(--accent);
+  text-decoration: none;
+  font-size: 0.95rem;
+}
+
+.backLink:hover {
+  text-decoration: underline;
+}
+
+/* === Layout principal === */
+.layout {
+  display: flex;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+.imageWrapper {
+  flex: 0 0 300px;
+  max-width: 100%;
+}
+
+.productImage {
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--card-bg);
+}
+
+.infoWrapper {
+  flex: 1;
+  min-width: 250px;
+}
+
+.productTitle {
+  color: var(--heading);
+  margin-top: 0;
+  margin-bottom: 0.75rem;
+}
+
+.description {
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin-bottom: 1rem;
+}
+
+.price {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: var(--accent);
+  margin-bottom: 0.75rem;
+}
+
+.category {
+  margin-bottom: 0.5rem;
+  color: var(--text-secondary);
+}
+
+.category strong {
+  color: var(--heading);
+}
+
+.stock {
+  margin-bottom: 0.5rem;
+  color: var(--text-secondary);
+}
+
+.stock strong {
+  color: var(--heading);
+}
+
+.stockOk {
+  color: var(--text);
+}
+
+.stockLow {
+  color: var(--warning);
+  font-weight: bold;
+}
+
+.stockOut {
+  color: var(--danger);
+  font-weight: bold;
+}
+
+/* === Botón agregar al carrito === */
+.btnAddCart {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 10px 20px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  margin-top: 10px;
+  font-size: 1rem;
+  transition: background 0.2s, opacity 0.2s;
+  white-space: nowrap;
+}
+
+.btnAddCart:hover:not(:disabled) {
+  background: var(--accent-hover);
+}
+
+.btnAddCart:disabled {
+  background: var(--border);
+  cursor: not-allowed;
+}
+
+.btnAddCartAdded {
+  background: var(--success) !important;
+}
+
+/* === Estados de carga / error === */
+.loadingContainer {
+  text-align: center;
+  padding: 3rem;
+}
+
+.notFound {
+  text-align: center;
+  padding: 2rem;
+}
+
+.notFound h2 {
+  color: var(--heading);
+}
+
+.notFoundLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+/* === Sección de opiniones === */
+.opinionesSection {
+  margin-top: 3rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--border);
+}
+
+.opinionesTitle {
+  color: var(--heading);
+  margin-bottom: 1.5rem;
+}
+
+.opinionesLoading {
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+.opinionesEmpty {
+  color: var(--text-muted);
+}
+
+.opinionCard {
+  background: var(--bg-alt);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius);
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.opinionAuthor {
+  display: block;
+  margin-bottom: 0.25rem;
+  color: var(--heading);
+}
+
+.opinionText {
+  color: var(--text);
+  margin: 0.25rem 0;
+}
+
+.opinionRating {
+  font-size: 0.9rem;
+  color: var(--warning);
+}
+
+@media (max-width: 768px) {
+  .layout {
+    flex-direction: column;
+  }
+
+  .imageWrapper {
+    flex: none;
+    text-align: center;
+  }
+
+  .productImage {
+    max-width: 300px;
+  }
+}

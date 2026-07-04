@@ -1,6 +1,6 @@
 import { NavLink } from 'react-router-dom';
 import { Navbar, Nav as NavBs, Button } from 'react-bootstrap';
-import { FaCartShopping, FaMagnifyingGlass } from 'react-icons/fa6';
+import { CartIcon, SearchIcon } from '../../assets/icons';
 import { useCart } from '../../context/CartContext';
 import { useAuth } from '../../context/AuthContext';
 import styles from './Nav.module.css';
@@ -11,7 +11,14 @@ const Nav = ({ searchTerm, setSearchTerm }) => {
   const totalItems = cart.reduce((acc, item) => acc + item.quantity, 0);
 
   return (
-    <Navbar collapseOnSelect expand="lg" bg="light" variant="light" className="rounded" style={{ padding: '0.5rem 0' }}>
+    <Navbar
+      collapseOnSelect
+      expand="lg"
+      bg="light"
+      variant="light"
+      className="rounded"
+      style={{ padding: '0.5rem 0' }}
+    >
       <Navbar.Toggle aria-controls="responsive-navbar-nav" />
       <Navbar.Collapse id="responsive-navbar-nav">
         <NavBs className="me-auto mb-2 mb-lg-0">
@@ -25,9 +32,11 @@ const Nav = ({ searchTerm, setSearchTerm }) => {
             Contacto
           </NavBs.Link>
           <NavBs.Link as={NavLink} to="/carrito">
-            <FaCartShopping className="me-1" />
+            <CartIcon size={18} className="me-1" />
             Carrito
-            {totalItems > 0 && <span className={styles.badge}>{totalItems}</span>}
+            {totalItems > 0 && (
+              <span className={styles.badge}>{totalItems}</span>
+            )}
           </NavBs.Link>
 
           {isAdmin && (
@@ -38,7 +47,7 @@ const Nav = ({ searchTerm, setSearchTerm }) => {
         </NavBs>
 
         <div className={styles.searchWrapper}>
-          <FaMagnifyingGlass className={styles.searchIcon} />
+          <SearchIcon size={16} className={styles.searchIcon} />
           <input
             type="text"
             placeholder="Buscar productos..."
@@ -54,7 +63,12 @@ const Nav = ({ searchTerm, setSearchTerm }) => {
               <Navbar.Text className="d-none d-lg-inline">
                 {user?.email}
               </Navbar.Text>
-              <Button variant="outline-secondary" size="sm" onClick={logout} className="ms-lg-2 mt-2 mt-lg-0">
+              <Button
+                variant="outline-secondary"
+                size="sm"
+                onClick={logout}
+                className="ms-lg-2 mt-2 mt-lg-0"
+              >
                 Cerrar Sesión
               </Button>
             </>
@@ -72,6 +86,6 @@ const Nav = ({ searchTerm, setSearchTerm }) => {
       </Navbar.Collapse>
     </Navbar>
   );
-}
+};
 
 export default Nav;

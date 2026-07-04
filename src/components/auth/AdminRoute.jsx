@@ -1,13 +1,14 @@
 import { Navigate } from 'react-router-dom';
 import { Spinner } from 'react-bootstrap';
 import { useAuth } from '../../context/AuthContext';
+import estilos from './AdminRoute.module.css';
 
 const AdminRoute = ({ children }) => {
   const { isAuthenticated, isAdmin, loading } = useAuth();
 
   if (loading) {
     return (
-      <div style={{ display: 'flex', justifyContent: 'center', padding: '3rem' }}>
+      <div className={estilos.loadingContainer}>
         <Spinner animation="border" role="status">
           <span className="visually-hidden">Cargando...</span>
         </Spinner>

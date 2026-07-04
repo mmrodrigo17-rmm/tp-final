@@ -1,0 +1,98 @@
+/* === Carrusel === */
+.carouselWrapper {
+  max-width: 900px;
+  margin: 0 auto 2rem;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  background: var(--bg-alt);
+}
+
+.carouselInner {
+  height: 400px;
+}
+
+.slideImage {
+  width: 100%;
+  height: 400px;
+  object-fit: contain;
+  background: var(--bg-alt);
+}
+
+.slideLink {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+}
+
+.slideLink:hover {
+  cursor: pointer;
+}
+
+.captionGradient {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 50%;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.75));
+  pointer-events: none;
+}
+
+.caption {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 2rem 1rem 1.5rem;
+  text-align: left;
+  z-index: 1;
+}
+
+.caption h3 {
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin: 0;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+  color: #fff;
+}
+
+.caption p {
+  font-size: 1.2rem;
+  margin: 0.25rem 0 0;
+  font-weight: 600;
+  color: #ffc107;
+}
+
+.imagePlaceholder {
+  width: 100%;
+  height: 400px;
+  background: var(--border-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  font-size: 1.2rem;
+}
+
+/* === Spinner de carga === */
+.loadingContainer {
+  text-align: center;
+  padding: 3rem;
+}
+
+@media (max-width: 768px) {
+  .carouselInner,
+  .slideImage,
+  .imagePlaceholder {
+    height: 250px;
+  }
+
+  .caption h3 {
+    font-size: 1rem;
+  }
+
+  .caption p {
+    font-size: 1rem;
+  }
+}
