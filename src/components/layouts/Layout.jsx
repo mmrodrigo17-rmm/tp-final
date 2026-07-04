@@ -3,10 +3,14 @@ import { Link, Outlet } from 'react-router-dom';
 import Nav from './Nav';
 import Footer from './Footer';
 import estilos from './Layout.module.css';
-import logo from '../../assets/logo.png';
+import logoSrc from '../../assets/logo.png';
+import logoOscuroSrc from '../../assets/logo-oscuro.png';
+import { useTheme } from '../../context/ThemeContext';
 
 const Layout = () => {
   const [searchTerm, setSearchTerm] = useState('');
+  const { effectiveTheme } = useTheme();
+  const logo = effectiveTheme === 'dark' ? logoOscuroSrc : logoSrc;
 
   return (
     <div className={estilos.wrapper}>
